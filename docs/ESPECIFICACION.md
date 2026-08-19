@@ -209,6 +209,74 @@ Tarifa del viaje: $15.000 + Liga del Ayudante: $20.000 = Total: $35.000 COP
 
 ---
 
+#### 4.4.1 Filtro de disponibilidad de ayudante (corrección del fundador)
+
+**Problema detectado:** *"No todos los conductores tienen algún ayudante."* Si la
+app ofrece el servicio con ayudante sin saber quién puede prestarlo, el cliente
+paga la liga, llega la motocarga sola y el trasteo no se puede hacer. Eso quema
+la app de inmediato.
+
+**Regla base:** el compromiso lo declara el conductor, y **el cliente solo puede
+pedir ayudante a quien se comprometió a llevarlo.**
+
+**1. En el registro de la motocarga — declaración permanente**
+
+Al registrarse, el conductor de motocarga debe responder de forma obligatoria:
+
+> **¿Usted presta el servicio con ayudante?**
+> - 🔘 **Sí, me comprometo a llevar ayudante cuando me lo pidan**
+> - 🔘 **No, yo solo transporto. El cliente sube y baja su carga**
+
+No hay opción intermedia tipo "a veces" o "depende". Un "quizás" no le sirve de
+nada al comerciante que tiene una lavadora en el andén.
+
+**2. En el día a día — interruptor de disponibilidad en vivo**
+
+El conductor que declaró "sí" no siempre tiene a alguien al lado: el pelado no
+llegó, o lo consiguió a media mañana en la esquina. Por eso, en su pantalla
+principal lleva un interruptor visible:
+
+```
+[ ✓ ] Hoy tengo ayudante disponible
+```
+
+- Lo enciende cuando efectivamente tiene a la persona con él, y lo puede
+  encender **en cualquier momento del día** apenas la consiga.
+- Se **apaga solo** al final de la jornada o al desconectarse, para que nunca
+  quede prendido de un día para otro por descuido.
+- Mientras esté apagado, sigue recibiendo servicios normales de solo transporte.
+
+**3. En el algoritmo de asignación — filtro duro**
+
+Funciona igual que el filtro de método de pago (Sección 4.27): si el cliente
+marcó `[✓] Necesito ayuda para cargar`, el backend **descarta a todos los
+conductores que no tengan el interruptor encendido en ese momento**, aunque
+sean los más cercanos. No se les muestra la solicitud siquiera.
+
+Si en ese instante no hay ninguna motocarga con ayudante disponible en el
+radio, la app lo dice de frente en vez de asignar a alguien que no puede
+cumplir:
+
+> «En este momento no hay motocargas con ayudante disponibles cerca. Puede
+> pedir solo transporte y conseguir ayuda por su cuenta, o esperar unos
+> minutos.»
+
+**4. Protección del cliente — la liga solo se cobra si el ayudante llegó**
+
+El valor de la liga ($20.000 COP) **se confirma al iniciar el servicio, no al
+solicitarlo**. Si la motocarga llega sin ayudante, el conductor no puede marcar
+el inicio con ayudante y **la liga se cae automáticamente del total**. El
+cliente paga solo el transporte.
+
+**Incumplimiento repetido:** el conductor que declaró compromiso y llega sin
+ayudante de forma reiterada pierde la marca de "presta servicio con ayudante",
+y debe volver a activarla desde su perfil. No es una multa; es dejar de
+ofrecer algo que no está cumpliendo.
+
+`[PENDIENTE: definir cuántos incumplimientos activan la pérdida de la marca]`
+
+---
+
 ### 4.5 Recargo Nocturno
 
 **Descripción.** Aplica a **transporte de personas** (motos y motocarros) y también se definió para el transporte terrestre en general. Sustituye al "cobro a ojo" nocturno del conductor.
