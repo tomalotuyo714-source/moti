@@ -308,7 +308,9 @@ ofrecer algo que no está cumpliendo.
 3. **Paso 3 — Selección del transporte terrestre.** La app pregunta:
    > «¡Cupo reservado en el barco "El Gran Delfín"! 🚢 Ahora, ¿cómo vas a llevar tu mercancía al muelle?»
    - 🔘 **Opción A:** "Ya tengo mi propio transporte" ➡️ pasa directo al recibo y al código. No pasa nada.
-   - 🔘 **Opción B:** "Necesito transporte al muelle" ➡️ despliega opciones según volumen (Moto / Motocarro / Motocarga), con la restricción de muelle aplicada.
+   - 🔘 **Opción B:** "Necesito transporte al muelle" ➡️ despliega **únicamente Motocarro y Motocarga**, según el volumen registrado.
+
+   > **Corrección del fundador:** en este flujo **la categoría Moto no se muestra nunca**. No se le ofrece al cliente para que él descarte: no aparece. Al muelle solo se entra a pie, en motocarro, motocarga o carro, así que ofrecer una moto sería ofrecer un servicio que va a ser devuelto en la entrada. La restricción de la Sección 4.2 deja de ser un bloqueo con mensaje de error y pasa a ser una ausencia: la opción sencillamente no existe en esta pantalla.
 4. **Paso 4 — Reserva de cupo en el barco** (día de salida, tarifa).
 5. **Paso 5 — Método de pago** (Origen o Destino; Efectivo, Nequi Push o Pix).
 
@@ -820,7 +822,61 @@ Nombre técnico: **Perfilamiento Dinámico Basado en Preferencias del Operador**
 - **Inclusión de trabajadores independientes:** un mototaxista sin cuenta en Brasil o Colombia puede trabajar seleccionando solo "Efectivo"; el sistema no lo excluye, solo lo asigna a clientes que pagan con billetes.
 - **Transparencia total:** en la pantalla de confirmación el cliente ve los datos de transferencia del conductor asignado (ej. *"Transfiere a Nequi: 312XXX-XXXX"*).
 
-**Pregunta abierta:** si el usuario cliente al registrarse debe declarar también qué monedas tiene físicamente disponibles (COP o BRL) para refinar el filtro, o si elige el método libremente en cada viaje. `[PENDIENTE: no se respondió]`
+**Pregunta abierta:** si el usuario cliente al registrarse debe declarar también qué monedas tiene físicamente disponibles (COP o BRL) para refinar el filtro, o si elige el método libremente en cada viaje. **CERRADO en 19.2 (P16):** no se declara al registrarse; se elige en cada servicio. Ver el orden definitivo en 4.27.1.
+
+---
+
+#### 4.27.1 El método de pago se pide ANTES de elegir el servicio (corrección del fundador)
+
+**Regla de orden.** El cliente **no ve primero la lista de operadores y luego escoge
+cómo paga.** Es al revés: **primero declara con qué va a pagar, y la app solo le
+muestra los operadores que reciben ese medio.**
+
+**Por qué importa.** Si el cliente escoge primero al conductor y después dice que
+paga con Nequi, puede pasar que ese conductor solo reciba efectivo. Ahí ya hay un
+operador asignado, un cliente esperando y una negociación incómoda en la calle —
+exactamente el *"no, yo no tengo Nequi, solo efectivo"* que la app vino a eliminar.
+Preguntando antes, ese choque no puede ocurrir: el conductor incompatible nunca
+aparece en la lista.
+
+**Flujo definitivo:**
+
+```
+1. El cliente arma su servicio (destino, carga o categoría)
+2. La app pregunta:  ¿Con qué va a pagar?
+                     🔘 Efectivo   🔘 Nequi   🔘 Pix
+3. El backend filtra por cercanía Y por compatibilidad de pago
+4. Se muestran SOLO los operadores que reciben ese medio,
+   ordenados por estrellas
+```
+
+**Si no hay nadie compatible cerca**, la app lo dice de frente en vez de mostrar
+una lista vacía sin explicación:
+
+> «En este momento no hay conductores cerca que reciban Nequi. Puede pagar en
+> efectivo o esperar unos minutos.»
+
+**Declaración del operador al registrarse.** El formulario es dinámico según su
+documento y su país de operación:
+
+| Documento / país | Medios que puede activar |
+|---|---|
+| Cédula de ciudadanía colombiana | Efectivo (COP) · Nequi · llave Bre-B |
+| CPF / documento brasileño | Efectivo (BRL) · Pix |
+
+- **Nequi y Bre-B exigen cédula colombiana**; no se le ofrecen a un operador
+  registrado con documento brasileño.
+- **Pix exige documento brasileño**; no se le ofrece a un operador colombiano.
+- **Efectivo está siempre disponible para todos.** Un operador puede trabajar
+  únicamente con efectivo y el sistema no lo excluye: simplemente lo asigna a
+  clientes que van a pagar con billetes.
+- Al activar Nequi debe ingresar su número de celular; al activar Pix, el tipo de
+  llave (CPF, teléfono, correo o aleatoria) y la llave.
+- **Debe tener al menos un medio activo** para poder recibir solicitudes.
+
+**Validación:** los datos de cobro se verifican al registrarse (Sección 4.26,
+validador de llaves). Un número de Nequi mal digitado se detecta en el registro,
+no el día que un cliente intente pagarle.
 
 ---
 
