@@ -40,10 +40,25 @@ Sobre como trabajan hoy, no sobre lo que harian:
 7. Si sus clientes pudieran ver desde el celular donde va el barco y les
    llegara un aviso cuando usted esta llegando, eso le ahorraria llamadas?
 
-Y al final, de frente:
+Sobre el dinero, de frente y sin rodeos:
 
-8. **Si esto le trae mas clientes, me daria un porcentaje del flete? Cuanto le
-   parece justo?**
+8. Cada cuanto hace usted un viaje completo? Cuanto se demora en ir y volver?
+9. En un viaje normal, cuantas guias o encomiendas distintas lleva?
+10. Hay meses en que no navega? Cuantos al ano?
+
+11. **La app le va a costar plata. Cual de estas tres le suena mas justo?**
+    - Recargar saldo y que le descuenten **$1.000 por cada envio** que le entre
+      por Moti.
+    - Recargar saldo y que le descuenten **un valor fijo por cada viaje** que
+      publique, sin importar cuantos envios reciba.
+    - Pagar una **mensualidad fija**, navegue o no navegue ese mes.
+
+> La pregunta 11 es la mas importante de todas y **la respuesta manda sobre lo
+> que diga el documento**. Anote la respuesta textual de cada capitan, no su
+> interpretacion. Si tres de cinco dicen lo mismo, ese es el modelo.
+>
+> Ojo con la pregunta 10: si hay meses muertos, la mensualidad los va a hacer
+> sentir robados y se van a dar de baja.
 
 ---
 

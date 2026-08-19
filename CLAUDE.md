@@ -29,6 +29,23 @@ cargadores del muelle, transporte de personas, facturacion, notificaciones
 automaticas, apps nativas. Todo eso esta en `docs/ESPECIFICACION.md` para
 despues. No lo construya todavia.
 
+## Modelo de ingresos — la regla de oro
+
+**El cliente nunca le paga nada a Moti.** Ni el que envia, ni el que recibe, ni
+el pasajero. El cliente le paga el 100% directo al operador (efectivo, Nequi o
+Pix). Moti no intermedia, no retiene y no ve pasar ese dinero.
+
+**Moti solo le cobra al capitan de embarcacion**, con saldo prepago: el capitan
+recarga la app con dinero real para poder recibir reservas. Motos, motocarros y
+motocargas usan la app gratis.
+
+**En la pantalla del cliente no puede aparecer ninguna linea de Moti** en el
+desglose de la tarifa. Ni comision, ni "licencia $0", ni nada. Ver Seccion 22
+de `docs/ESPECIFICACION.md`.
+
+En la version 0 no se cobra nada: el piloto es gratuito y el modulo de saldo
+no esta implementado.
+
 ## Reglas que no se rompen
 
 ### Lenguaje

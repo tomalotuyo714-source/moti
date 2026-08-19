@@ -656,7 +656,14 @@ El cliente digita su clave o usa huella/rostro y presiona `[Aceptar]`.
 
 ---
 
-### 4.26 Billetera Interna Autosustentable y Retiros 24/7
+### 4.26 Billetera Interna Autosustentable y Retiros 24/7 ⛔ **ANULADO — VER SECCIÓN 22**
+
+> **Toda esta sección quedó sin efecto.** El modelo de recaudo centralizado, el
+> abono automático al monedero del conductor y los retiros 24/7 **se eliminan**:
+> partían de que el dinero del cliente entraba a la cuenta de Moti, cosa que el
+> fundador descartó expresamente. El modelo vigente —**saldo prepago que el
+> capitán recarga con dinero real**— está en la **Sección 22**. El texto de abajo
+> se conserva solo como registro histórico.
 
 **Modelo inicial planteado (prepago).** El conductor debía recargar previamente un "saldo de trabajo" transfiriendo a una cuenta central de Nequi o Pix; el sistema descontaba la comisión al completar el servicio; si el monedero llegaba a cero o negativo, el backend lo pausaba automáticamente.
 
@@ -1734,7 +1741,14 @@ Pregúntame con cuál inicio.
 
 ### 19.1 Decisiones de negocio y monetización
 
-#### P6 — Modelo de monetización definitivo ✅ **MIXTO POR CATEGORÍA**
+#### P6 — Modelo de monetización definitivo ⛔ **CORREGIDO — VER SECCIÓN 22**
+
+> **Lo que sigue en este punto P6 quedó ANULADO.** El fundador corrigió el modelo:
+> **Moti cobra únicamente a los capitanes de barco, mediante saldo prepago, y nunca
+> toca el dinero del cliente.** La versión vigente está en la **Sección 22**.
+> Se conserva el texto original abajo solo como registro de lo que se descartó.
+
+~~**MIXTO POR CATEGORÍA**~~
 
 | Categoría | Comisión Moti |
 |---|---|
@@ -2149,4 +2163,166 @@ La presente política rige a partir del [FECHA] y sustituye cualquier versión a
 
 ---
 
-*Fin del documento — Versión 2.*
+## 22. MODELO DE INGRESOS — VERSIÓN VIGENTE
+
+> **Esta sección sustituye al punto P6 de la Sección 19.1, a la Sección 4.26 completa
+> y a la Sección 9.** Corrección hecha por el fundador. Manda sobre todo lo anterior.
+
+---
+
+### 22.1 La regla de oro
+
+> **El cliente nunca le paga nada a Moti.**
+>
+> Ni el que envía mercancía, ni el que recibe, ni el que se sube a una moto o a un
+> motocarro. El cliente le paga el **100% del valor** directamente al operador, en
+> efectivo, por Nequi o por Pix. Moti no participa en esa transacción, no la
+> intermedia, no la retiene y no la ve pasar por sus cuentas.
+
+**Consecuencia obligatoria en la interfaz:** en la pantalla del cliente **no puede
+aparecer ninguna línea de Moti** en el desglose de la tarifa. Ni una comisión, ni
+un "$0 incluido", ni una "licencia de software". Nada. El cliente ve lo que le
+paga al capitán y punto.
+
+---
+
+### 22.2 Quién paga
+
+| Actor | Paga a Moti |
+|---|---|
+| Cliente / remitente / destinatario / pasajero | **Nunca. Cero.** |
+| Mototaxista | **No** |
+| Conductor de motocarro | **No** |
+| Conductor de motocarga | **No** |
+| Ayudante / cargador del muelle | **No** |
+| **Capitán de embarcación** | **Sí — único que paga** |
+
+**Por qué solo los barcos:**
+
+1. **Ahí está el dinero.** Un flete fluvial de $120.000 COP soporta una comisión sin
+   que nadie lo note. Una carrera de moto de $4.000 no.
+2. **Ahí está el valor real de la app.** El capitán es el único que recibe algo que
+   hoy no puede comprar en ninguna parte: manifiesto digital, reservas anticipadas y
+   clientes que ya saben cuándo llega. El mototaxista solo recibe un viaje más.
+3. **Motos y motocargas gratis es el arma de captación.** Ese gremio se vuelve la
+   base de usuarios de la app sin que usted tenga que cobrarles ni discutir con
+   ellos. Y son los que llevan la carga al muelle, o sea, alimentan el negocio que
+   sí paga.
+4. **Son pocos y son identificables.** Cobrarle a 5 capitanes es manejable. Cobrarle
+   a 300 mototaxistas, no — y menos en un pueblo donde todos se conocen y se avisan.
+
+---
+
+### 22.3 Cómo paga el capitán: saldo prepago
+
+**El capitán tiene que recargar la app con dinero real para poder usarla.**
+
+**Flujo:**
+
+1. El capitán recarga saldo transfiriendo por **Nequi o Pix a la cuenta de Moti**, o
+   en efectivo con un punto autorizado.
+2. Envía el comprobante o el sistema valida la transferencia, y el saldo aparece en
+   su cuenta dentro de la app.
+3. **Cada vez que un cliente le reserva un cupo, se le descuenta el valor del
+   servicio del saldo.**
+4. Si el saldo llega a cero, **su viaje deja de aparecer en la cartelera de barcos**
+   y no puede recibir nuevas reservas.
+5. Los envíos ya reservados y en curso **no se afectan nunca**. Una embarcación
+   navegando con carga de terceros no se bloquea por saldo — eso perjudicaría al
+   cliente, que no tiene nada que ver con la deuda del capitán.
+
+**Tarifa por envío recibido:**
+
+| Tamaño del envío | Costo para el capitán |
+|---|---|
+| Hasta 500 kg cobrables | **$1.000 COP** |
+| Más de 500 kg cobrables | **$5.000 COP** |
+
+**Recarga mínima:** $20.000 COP (equivale a 20 envíos pequeños).
+
+**Por qué valor fijo y no porcentaje:** el lanchero entiende de una "cada guía que
+me entra por Moti me cuesta mil pesos". Un porcentaje lo obliga a hacer cuentas y
+genera desconfianza sobre si le están cobrando bien. La legibilidad vale más que
+los pesos de diferencia.
+
+**Devolución automática:** si un envío se cancela antes de que el barco zarpe, el
+valor descontado **regresa al saldo del capitán**. Él no perdió nada, y el sistema no
+tiene que explicarle por qué le cobraron por un flete que no hizo.
+
+**Campaña de lanzamiento:** los primeros **90 días son gratis** para cada capitán
+desde que activa su cuenta. Se le muestra el saldo consumido en $0 para que vea
+exactamente cuánto le habría costado, y así la transición al cobro no sea una
+sorpresa.
+
+---
+
+### 22.4 Lo que este modelo elimina (y por qué es una gran noticia)
+
+Al no tocar el dinero de nadie, **desaparece de golpe la parte más costosa, más
+riesgosa y más regulada del proyecto**:
+
+| Ya no se necesita | Por qué |
+|---|---|
+| Cuenta central que recibe pagos de clientes | Moti solo recibe recargas de sus propios capitanes |
+| Billetera con saldo a favor del operador | El operador nunca tiene plata suya dentro de Moti |
+| Retiros automáticos 24/7 | No hay nada que retirar |
+| API de dispersión de fondos | No se transfiere dinero a terceros |
+| Fondo de reserva en la cuenta empresarial | No hay obligación de pagar a nadie |
+| Cruce de saldos por pagos en efectivo | No aplica |
+| Bot de reintento de transferencias fallidas | No aplica |
+| Nequi Push para cobrarle al cliente | El cliente le paga al capitán, no a Moti |
+
+**Riesgo regulatorio:** administrar dinero de terceros es una actividad vigilada. Al
+recibir únicamente pagos de sus propios clientes (los capitanes) por el uso de una
+licencia de software, Moti es simplemente una empresa de software que factura un
+servicio. Es la posición más limpia posible.
+
+**Nequi Push sigue siendo útil**, pero para una sola cosa: que el capitán recargue
+su saldo desde la app en un toque, en vez de transferir a mano y mandar el
+comprobante. Ese sí es dinero que le pertenece a Moti.
+
+---
+
+### 22.5 Ingresos proyectados (referencia, no promesa)
+
+Escenario conservador con **5 capitanes activos**:
+
+| Variable | Valor |
+|---|---|
+| Envíos por viaje | 15 |
+| Viajes por capitán al mes | 4 |
+| Envíos mensuales totales | 300 |
+| Mezcla | 80% pequeños ($1.000) + 20% grandes ($5.000) |
+| **Ingreso mensual** | **$540.000 COP** |
+
+Con **15 capitanes** y la misma mezcla: **$1'620.000 COP al mes**.
+
+Ese es el orden de magnitud real del negocio en su primera etapa. Sirve para cubrir
+servidores y empezar a devolver la inversión de tiempo — no para renunciar al empleo.
+El salto viene de abrir más muelles y más ciudades con la misma base de código.
+
+🔴 *Cifras de referencia construidas sobre supuestos. Deben reemplazarse por datos
+reales apenas el piloto arroje su primer mes de operación.*
+
+---
+
+### 22.6 Qué cambia en el código
+
+**En la versión 0 no se implementa nada de esto.** El piloto es gratuito: no hay
+saldo, no hay cobro, no hay recargas. Construir el módulo de saldo antes de saber si
+los capitanes usan la app sería exactamente el error que se quiere evitar.
+
+**Lo único que aplica hoy** es la regla de oro: la pantalla del cliente no muestra
+ninguna línea de Moti, y el texto le deja claro que le paga directo al capitán.
+Eso ya está implementado.
+
+**Para la Fase 2**, cuando haya capitanes reales usándola:
+- Tablas `saldos` y `movimientos_saldo`.
+- Descuento automático al confirmarse una reserva, con devolución si se cancela.
+- Ocultar de la cartelera los viajes de capitanes con saldo en cero.
+- Pantalla de recarga y de historial de consumo.
+- Nunca bloquear un viaje que ya está en navegación.
+
+---
+
+*Fin del documento — Versión 3.*
