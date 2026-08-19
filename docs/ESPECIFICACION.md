@@ -1307,7 +1307,7 @@ Muchos conductores residen en Tabatinga pero trabajan en Leticia o viceversa.
 - El Destinatario se engancha por **número de celular** buscado en la base de datos.
 - El manifiesto se ordena automáticamente por **secuencia geográfica de los muelles de la ruta**.
 
-`[PENDIENTE: diseñar el diagrama entidad-relación completo en PostgreSQL/PostGIS — entregable formal no ejecutado]`
+⏳ **PARCIAL.** El esquema de la versión 0 (rastreo fluvial) ya está implementado en `supabase/migrations/0001_init.sql`, con RLS. Falta el modelo completo de los módulos terrestres, billetera y saldos, que se diseñará cuando esas fases entren.
 
 ---
 
@@ -1446,7 +1446,7 @@ Pantalla de carga: *"Verificando condiciones climáticas por satélite en tu ubi
 - Alta visibilidad para conducción en moto.
 - Idiomas: **español y portugués**, con traducción automática en el chat.
 
-`[PENDIENTE: no se definieron paleta de colores de marca, tipografía, logotipo ni identidad visual, salvo el rojo #FF0000 de la alerta de PARE]`
+✅ **RESUELTO en la Sección 19.6:** paleta, tipografía Inter, tamaños mínimos y concepto de logotipo definidos.
 
 ---
 
@@ -1566,7 +1566,7 @@ Debe quedar claro que si el barco encalla o sufre un siniestro por causas de la 
 **4. Cláusula de Prohibición de Trabajo Infantil y Cumplimiento de Edad Mínima.**
 Los T&C obligan al conductor a garantizar que cualquier ayudante que suba al volco para el esfuerzo físico **cumpla con la edad legal para trabajar en Colombia (mayor de 18 años, o las excepciones de ley con permiso)**. Violarla implica **expulsión inmediata y definitiva** del conductor de la plataforma.
 
-`[PENDIENTE: redactar el texto literal definitivo de estas cuatro cláusulas]`
+✅ **RESUELTO.** El texto literal de las cuatro cláusulas está redactado en la **Sección 21**.
 
 ### 10.12 Implementación de los T&C en el software
 1. **Pantalla de registro obligatoria:** al abrir la app por primera vez, usuario y conductor deben ver el texto de los T&C.
@@ -1588,7 +1588,7 @@ Los T&C obligan al conductor a garantizar que cualquier ayudante que suba al vol
 
 ## 11. POLÍTICA DE PRIVACIDAD Y TRATAMIENTO DE DATOS
 
-**Estado: `[PENDIENTE — NO SE REDACTÓ]`**
+**Estado: ✅ REDACTADA — ver Sección 20** (borrador completo conforme a la Ley 1581 de 2012, pendiente de revisión por abogado).
 
 Lo único definido:
 - Se identificó como **obligatoria por ley en Colombia** que vaya junto a los T&C (**Ley 1581 de 2012 — Habeas Data**).
@@ -1601,7 +1601,7 @@ Lo único definido:
   - Purga automática de números en tabla temporal de "Espera de Registro" a las **48 horas**.
   - Autorización expresa para entregar datos de registro (cédula, IP, historial de chat) a la Fiscalía o autoridades competentes en casos de contrabando o carga ilegal.
 
-`[PENDIENTE: redactar el texto completo de la Política de Tratamiento de Datos Personales conforme a la Ley 1581 de 2012]`
+✅ **RESUELTO.** El texto completo está en la **Sección 20**. 🔴 Falta únicamente la revisión y firma de un abogado.
 
 ---
 
