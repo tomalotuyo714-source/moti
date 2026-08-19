@@ -667,7 +667,18 @@ Nombre técnico: **Algoritmo de Priorización por Calificación / "Moti-Premium"
 - **Flexibilidad de pago directo:** aviso en pantalla: *«Precios de referencia. El pago final se pacta directamente con el conductor según la tasa local aceptada»*.
 
 **Opciones de automatización evaluadas:**
-- **Opción 1 — Lectura digital de casas de cambio (Web Scraping).** Un bot entra automáticamente cada mañana a las **7:00 AM** a los sitios web, estados de Facebook o canales de WhatsApp de las principales casas de cambio de Leticia, lee el texto (ej. *"Compra: 6.20 - Venta: 6.50"*), extrae el número y actualiza el servidor. (La más exacta.)
+- **Opción 1 — Lectura digital de casas de cambio (Web Scraping).** ⛔ **DESCARTADA.** Un bot entraría cada mañana a las 7:00 AM a los sitios web, estados de Facebook o canales de WhatsApp de las principales casas de cambio de Leticia, leería el texto (ej. *"Compra: 6.20 - Venta: 6.50"*), extraería el número y actualizaría el servidor.
+
+  > **En la conversación se la calificó como "la más exacta". Eso era falso y hay que corregirlo:**
+  >
+  > 1. **Los canales de WhatsApp no se pueden leer con un bot.** Están cifrados de extremo a extremo. Técnicamente no existe forma de hacerlo, y la fuente principal en Leticia probablemente sea justamente esa.
+  > 2. **Raspar Facebook viola sus términos de servicio** y la plataforma bloquea activamente ese tipo de acceso. Es una dependencia que se puede caer de un día para otro y dejar la tasa congelada sin que nadie se entere.
+  > 3. **Las casas de cambio de un pueblo pequeño no tienen página web** que publique la tasa de forma estructurada. Y si la tienen, cambian el diseño cuando quieran y el bot deja de servir en silencio.
+  > 4. **Un bot roto no avisa.** Sigue devolviendo la última tasa que leyó. Los conductores empiezan a perder plata y nadie sabe por qué.
+  >
+  > No es la más exacta: es la más frágil de las tres, y en parte ni siquiera es realizable.
+
+  **Modelo vigente:** promedio colaborativo de los propios conductores, con banda de control y respaldo manual. Ver Sección 19.1, punto P13.
 - **Opción 2 — Tarifa Colaborativa (estilo DiDi).** Los primeros **10 mototaxistas o capitanes** que se conecten reportan a cómo están recibiendo el Real (ej. 6.10, 6.20, 6.15). El sistema **descarta los extremos, promedia** y fija la tasa del día (ej. 6.15).
 - **Opción 3 — Margen de descuento fijo sobre la TRM.** Se conecta a la API financiera oficial y se le **resta automáticamente un margen fijo del 5% u 8%** (lo que cobran tiendas y casas de cambio por intermediación). Si la TRM dice 6.50, la app muestra 6.10. (La más segura, funciona los 365 días.)
 
