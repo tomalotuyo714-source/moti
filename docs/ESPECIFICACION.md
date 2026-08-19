@@ -172,7 +172,15 @@ Consecuencia de diseño: **el sistema debe autorregularse y correr solo, con cer
 - Ingresos constantes: hoy pasan horas parados en una esquina.
 - Seguridad frente a robos: al estar registrados con cédula y papeles, los comerciantes prefieren contratarlos por la app antes que meter mercancía costosa en una motocarga de la calle desconocida.
 
-**Idea planteada y no cerrada:** que almacenes de electrodomésticos o ferreterías de Leticia dejen a Moti Motocargas como su transportador oficial para los domicilios de sus clientes. `[PENDIENTE: no se respondió]`
+**Idea planteada — CERRADA, no se implementa.** Se propuso que almacenes de electrodomésticos o ferreterías de Leticia dejaran a Moti Motocargas como su transportador oficial.
+
+**Decisión del fundador:** *"esto no lo decido yo, lo decide la misma gente al utilizar la app; es quien elige."*
+
+Moti **no designa, no certifica y no asigna** transportadores oficiales. El almacén abre la app y escoge a quien quiera. Si un motocarguero termina siendo el de siempre para una ferretería, es porque se lo ganó con su trabajo y sus estrellas, no porque la plataforma lo haya nombrado.
+
+**Además hay una razón legal:** que Moti designe operadores oficiales sería curar y respaldar a un proveedor, lo que la acerca a ser una empresa de transporte que asigna prestadores. Contradice la Sección 10.
+
+**Lo único que sí se puede construir**, porque no es Moti eligiendo sino el usuario eligiendo más rápido: una lista de **favoritos o "el de siempre"** para volver a llamar al operador que ya usó antes. Fase 2, opcional. Ver P30 en la Sección 19.4.
 
 ---
 
@@ -1662,7 +1670,7 @@ Lo único definido:
 21. **Política de Tratamiento de Datos Personales** (Ley 1581 de 2012) — texto completo.
 22. **Texto literal de las 4 cláusulas de frontera**: contrabando/aduanas, jurisdicción bilateral, riesgo fluvial mayor, trabajo infantil.
 23. **Revisión final por abogado comercial colombiano** adaptada a la alcaldía local de Leticia.
-24. **Régimen de retenciones e impuestos (IVA / ICA / DIAN)** — ofrecido, nunca desarrollado.
+30. Almacenes que dejen a Moti Motocargas como transportador oficial. — CERRADO en 19.4 (P30): descartado, lo decide el usuario.
 25. **Reglas fiscales de geolocalización para el ISS brasileño** — definidas conceptualmente, sin detalle.
 
 ### 17.4 Funcionalidades propuestas sin veredicto
@@ -1955,7 +1963,7 @@ Constituir **Sociedad por Acciones Simplificada (S.A.S.)** en la Cámara de Come
 | P27 | Etiquetas rápidas de calificación | ✅ **APROBADA** | 1 | Barato y mejora la calidad del dato. Etiquetas: conductor → "Buen manejo", "Puntual", "Casco limpio", "Cuidó la carga"; cliente → "Amable", "Puntual", "Pagó sin problema" |
 | P28 | Venta del panel a agencias del muelle | ❌ **DESCARTADA** | — | Convertiría a Moti en proveedor de software para su propia competencia. El Portal Web mayorista (4.38) ya cubre a ese cliente **dentro** del ecosistema |
 | P29 | Categoría "Moti-Turismo" con tarifa más alta | ❌ **DESCARTADA** | — | Sustituida por la casilla bilingüe sin sobrecosto (Idea 23) |
-| P30 | Almacenes con Moti como transportador oficial | ✅ **APROBADA** | 2 | Se implementa como cuenta empresa dentro del Portal Web, con botón "Pedir domicilio Moti" para sus clientes |
+| P30 | Almacenes con Moti como transportador oficial | ⛔ **DESCARTADA** — sustituida por "favoritos" | 2 | Moti no designa transportadores: el usuario elige. Lo único que se construye es una lista de favoritos o "el de siempre" para repetir operador en un toque. Es el usuario eligiendo más rápido, no la plataforma nombrando a nadie |
 | P31 | Pix con QR Dinámico (Cobro Inmediato) | ✅ **APROBADA** | 1 | Es el equivalente exacto de Nequi Push del lado brasileño. Sin él, Tabatinga queda en desventaja funcional |
 | P32 | Trazabilidad como prueba legal | ✅ **APROBADA** | 1 | La bitácora GPS, el manifiesto, el chat y el log de aceptación de T&C ya se almacenan. Se añade **exportación en PDF de la trazabilidad completa de un servicio** desde el Dashboard, para entregar a autoridades |
 | P32b | Canal de soporte | ✅ **ASÍNCRONO ÚNICAMENTE** | 1 | Formulario dentro de la app + centro de ayuda con preguntas frecuentes. **Sin línea telefónica ni chat en vivo**, coherente con "cero desgaste". SLA declarado: respuesta en 48 horas hábiles |
@@ -1968,7 +1976,7 @@ Constituir **Sociedad por Acciones Simplificada (S.A.S.)** en la Cámara de Come
 Transporte de personas (moto, motocarro) · Motocargas con ayudante · Restricción de muelle · Soberanía de placas · Recargo nocturno · Marketplace de cargadores sin recaudo · Módulo fluvial completo (manifiesto, aforo, toneladas, multiplicador de piezas, Starlink, predicción, geocerca de aproximación) · Modelo triangular · Token OTP · Pago en Origen/Destino · Pago obligatorio antes de arrancar · Efectivo, Nequi, Nequi Push, Pix, Pix QR Dinámico · Billetera y retiros 24/7 · Moti-Tasa colaborativa · Modo offline y sincronización diferida · Registro seguro por WhatsApp Business API · Modo Turista · Estrellas y etiquetas rápidas · Moti-Clima · Foto de báscula · Dashboard Web · Soporte asíncrono · Exportación de trazabilidad · QR del aeropuerto.
 
 **FASE 2 — Consolidación (mes 4 al 9)**
-iOS · Portal Web mayorista · Moti-Alerta completo (PARES, reportes viales, caducidad 60 min) · Moti-Padrino · Moti-S.O.S. · Moti-Sello QR físico · Moti-Bilingüe · Bloqueo de zonas por horario · Almacenes con transportador oficial.
+iOS · Portal Web mayorista · Moti-Alerta completo (PARES, reportes viales, caducidad 60 min) · Moti-Padrino · Moti-S.O.S. · Moti-Sello QR físico · Moti-Bilingüe · Bloqueo de zonas por horario · Lista de operadores favoritos ("el de siempre").
 
 **FASE 3 — Escala (mes 10 en adelante)**
 Segunda y tercera ciudad por geocercas · Pago digital al Líder de Cuadrilla con comisión del 5% · Verificación automatizada de antecedentes · Póliza de responsabilidad extracontractual · Evaluación fiscal formal de la operación brasileña.
