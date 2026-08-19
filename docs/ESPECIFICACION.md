@@ -98,7 +98,6 @@ Consecuencia de diseño: **el sistema debe autorregularse y correr solo, con cer
 - Transporte fluvial: lanchas y barcos, con manifiesto digital y rastreo satelital.
 - Servicio de "conector de carga" (cargadores del muelle) con negociación de tarifa.
 - Módulo financiero: Efectivo, Nequi (llave / Push), Pix, billetera interna y retiros 24/7.
-- Facturación electrónica DIAN.
 - Alertas viales colaborativas y señalización de PARES ocultos.
 - Modo Turista temporal.
 
@@ -990,7 +989,12 @@ Así el cliente no queda a ciegas en la selva.
 
 ---
 
-### 4.39 Facturación Electrónica DIAN
+### 4.39 Facturación Electrónica DIAN ⛔ **ELIMINADA — VER SECCIÓN 23**
+
+> **Este módulo se elimina del producto.** Decisión del fundador: emitirle al
+> comerciante una factura por el flete equivale a declarar que Moti vendió el
+> servicio de transporte, y Moti no vende transporte. El texto de abajo se
+> conserva solo como registro de lo que se descartó. Ver **Sección 23**.
 
 **Descripción (Idea 18).** Las empresas formales necesitan legalizar sus gastos de transporte ante la DIAN. Las agencias tradicionales se demoran días o dan recibos de papel que no sirven para la contabilidad.
 
@@ -1065,7 +1069,7 @@ Así el cliente no queda a ciegas en la selva.
 | Idea 15 | Comprobante de pesaje / foto de la báscula al momento de la entrega como respaldo legal | `[PENDIENTE: sin respuesta]` |
 | Idea 16 | Botón "Carga Delicada / Frágil" | **APROBADA** (ver 4.12), con cobro extra sin definir |
 | Idea 17 | "Moti-Portal" para mayoristas | **APROBADA** implícitamente (*"me gusta cómo piensa, esa es la idea, innovar"*) |
-| Idea 18 | Facturación electrónica DIAN | **APROBADA** explícitamente |
+| Idea 18 | Facturación electrónica DIAN del flete | ⛔ **ELIMINADA** — facturar el flete equivale a vender transporte. Ver Sección 23 |
 | Idea 19 | "Moti-Sello" QR físico en cajas | `[PENDIENTE: sin confirmación]` |
 | Idea 20 | Factor "Aguacero" — tarifa dinámica por clima | **DESCARTADA** — *"el que quiera trabajar que trabaje, sea con lluvia o con sol"* |
 | Idea 21 | "Mercancía Asegurada contra Humedad" — exigir carpa impermeable pagando adicional | **DESCARTADA** junto con la Idea 20 |
@@ -1964,7 +1968,7 @@ Constituir **Sociedad por Acciones Simplificada (S.A.S.)** en la Cámara de Come
 Transporte de personas (moto, motocarro) · Motocargas con ayudante · Restricción de muelle · Soberanía de placas · Recargo nocturno · Marketplace de cargadores sin recaudo · Módulo fluvial completo (manifiesto, aforo, toneladas, multiplicador de piezas, Starlink, predicción, geocerca de aproximación) · Modelo triangular · Token OTP · Pago en Origen/Destino · Pago obligatorio antes de arrancar · Efectivo, Nequi, Nequi Push, Pix, Pix QR Dinámico · Billetera y retiros 24/7 · Moti-Tasa colaborativa · Modo offline y sincronización diferida · Registro seguro por WhatsApp Business API · Modo Turista · Estrellas y etiquetas rápidas · Moti-Clima · Foto de báscula · Dashboard Web · Soporte asíncrono · Exportación de trazabilidad · QR del aeropuerto.
 
 **FASE 2 — Consolidación (mes 4 al 9)**
-iOS · Portal Web mayorista · Facturación electrónica DIAN · Moti-Alerta completo (PARES, reportes viales, caducidad 60 min) · Moti-Padrino · Moti-S.O.S. · Moti-Sello QR físico · Moti-Bilingüe · Bloqueo de zonas por horario · Almacenes con transportador oficial.
+iOS · Portal Web mayorista · Moti-Alerta completo (PARES, reportes viales, caducidad 60 min) · Moti-Padrino · Moti-S.O.S. · Moti-Sello QR físico · Moti-Bilingüe · Bloqueo de zonas por horario · Almacenes con transportador oficial.
 
 **FASE 3 — Escala (mes 10 en adelante)**
 Segunda y tercera ciudad por geocercas · Pago digital al Líder de Cuadrilla con comisión del 5% · Verificación automatizada de antecedentes · Póliza de responsabilidad extracontractual · Evaluación fiscal formal de la operación brasileña.
@@ -2325,4 +2329,77 @@ Eso ya está implementado.
 
 ---
 
-*Fin del documento — Versión 3.*
+## 23. FACTURACIÓN — QUÉ SE ELIMINA Y QUÉ NO SE PUEDE ELIMINAR
+
+> Esta sección sustituye a la Sección 4.39 y a la parte de facturación de la 19.9.
+
+---
+
+### 23.1 Lo que se elimina: facturar el flete
+
+**Queda fuera del producto, de forma definitiva:**
+
+- Emitir factura electrónica al comerciante por el valor del flete fluvial.
+- Emitir factura electrónica por el acarreo de una motocarga.
+- Emitir cualquier documento a nombre de Moti por un servicio de transporte.
+- La integración con proveedores tecnológicos autorizados por la DIAN
+  (Facturatech, Siigo, Alegra) para ese fin.
+- El perfil dual "usuario natural / usuario empresa" con RUT y correo de
+  facturación, cuyo único propósito era este módulo.
+
+**Razón (decisión del fundador):** una factura es la prueba documental de que
+alguien vendió algo. Si Moti le factura el flete al comerciante, está
+declarando por escrito y ante la autoridad tributaria que **Moti vendió el
+transporte**. Eso destruye de un golpe toda la arquitectura legal de las
+Secciones 10 y 21: la exclusión de responsabilidad, la naturaleza de licencia
+de software y la defensa ante la Superintendencia de Transporte. Ninguna
+ventaja comercial frente a Leticia Express compensa eso.
+
+**El flete lo cobra el capitán, que es quien presta el servicio.** Si un
+comerciante formal necesita soportar ese gasto, se lo pide al capitán, que es
+su verdadero proveedor. Moti es ajena a esa relación.
+
+---
+
+### 23.2 Lo que NO se puede eliminar: facturar la licencia
+
+Aquí está el matiz que hay que tener claro desde ahora.
+
+**Moti sí vende algo: le vende al capitán el derecho a usar el software.** Ese
+es el único ingreso de la empresa (Sección 22). El día que usted reciba la
+primera recarga de saldo de un capitán, eso es un ingreso gravado y la
+normatividad colombiana exige respaldarlo con un documento.
+
+| Concepto | ¿Factura Moti? |
+|---|---|
+| Flete fluvial que paga el cliente | **No.** Nunca. Ese dinero no es de Moti |
+| Carrera de moto o motocarro | **No.** Nunca |
+| Servicio de los cargadores del muelle | **No.** Nunca |
+| **Recarga de saldo del capitán** | **Sí.** Es el ingreso propio de la empresa |
+
+**Lo importante es el concepto que va escrito en ese documento.** Nunca debe
+decir "transporte", "flete" ni "servicio de carga". Debe decir algo como
+**"Licenciamiento de uso de plataforma tecnológica"**. Ese texto es lo que
+mantiene a Moti del lado correcto de la línea.
+
+---
+
+### 23.3 Cuándo aplica esto
+
+**Hoy no aplica.** El piloto es gratuito: no hay recargas, no hay ingresos, no
+hay nada que facturar. No implemente absolutamente nada de facturación en la
+versión 0.
+
+Aplica el día que cobre la primera recarga. Para entonces ya debe existir la
+S.A.S. y el acompañamiento de un contador. En ese momento, lo más probable es
+que ni siquiera necesite un módulo dentro de la app: con pocos capitanes, se
+emite desde el software contable que use la empresa. **Construir facturación
+dentro de Moti solo tendría sentido con decenas de capitanes recargando.**
+
+🔴 *La obligación exacta, el régimen aplicable y si le corresponde factura
+electrónica o documento equivalente los debe confirmar un contador público
+colombiano. Esto no es asesoría tributaria.*
+
+---
+
+*Fin del documento — Versión 4.*
