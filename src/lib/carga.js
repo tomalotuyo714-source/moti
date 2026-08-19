@@ -69,20 +69,13 @@ export function calcularValor(viaje, kgCobrables) {
   return Math.round(kgCobrables * Number(viaje.precio_por_kg || 0))
 }
 
-/** Token OTP de 4 digitos para el retiro seguro en el muelle. */
-export function generarToken() {
-  return String(Math.floor(1000 + Math.random() * 9000))
-}
-
-/** Codigo publico corto para el link de rastreo. Sin letras ambiguas. */
-export function generarCodigoPublico() {
-  const alfabeto = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  let codigo = 'MT'
-  for (let i = 0; i < 6; i++) {
-    codigo += alfabeto[Math.floor(Math.random() * alfabeto.length)]
-  }
-  return codigo
-}
+// El token de retiro y el codigo publico NO se generan aqui.
+// Los genera el servidor con un trigger (migracion 0002), porque:
+//   - Math.random() en el navegador no sirve para un secreto.
+//   - Si el navegador del remitente los genera, el remitente ve el
+//     token del destinatario en la respuesta de la peticion.
+// El token solo lo devuelve la funcion rastrear_envio, y unicamente
+// a quien confirme los ultimos 4 digitos del celular del destinatario.
 
 export function pesos(valor) {
   return '$' + new Intl.NumberFormat('es-CO').format(Math.round(Number(valor) || 0))

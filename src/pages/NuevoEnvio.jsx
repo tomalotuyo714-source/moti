@@ -6,8 +6,6 @@ import {
   kilosCobrables,
   volumenEquivalente,
   calcularValor,
-  generarToken,
-  generarCodigoPublico,
   pesos,
   fecha,
 } from '../lib/carga.js'
@@ -73,9 +71,9 @@ export default function NuevoEnvio({ perfil }) {
     setGuardando(true)
     setError(null)
 
-    const token = generarToken()
-    const codigo = generarCodigoPublico()
-
+    // El token de retiro y el codigo publico los pone el servidor.
+    // Aqui no se mandan y no se piden de vuelta: el remitente no
+    // debe ver nunca el token del destinatario.
     const { data: envio, error: e1 } = await supabase
       .from('envios')
       .insert({
@@ -90,10 +88,8 @@ export default function NuevoEnvio({ perfil }) {
         fragil,
         pago,
         valor,
-        token,
-        codigo_publico: codigo,
       })
-      .select()
+      .select('id, codigo_publico')
       .single()
 
     if (e1) {

@@ -10,7 +10,11 @@ export default function MisEnvios({ perfil }) {
     if (!perfil) return
     supabase
       .from('envios')
-      .select('*, paradas(muelle), viajes(fecha_salida, estado, embarcaciones(nombre))')
+      // Columnas explicitas: la columna "token" esta revocada en la base
+      // de datos y un select * fallaria. El remitente no ve el token.
+      .select(
+        'id, codigo_publico, estado, destinatario_nombre, kg_cobrables, valor, pago, fragil, creado_en, paradas(muelle), viajes(fecha_salida, estado, embarcaciones(nombre))'
+      )
       .eq('remitente_id', perfil.id)
       .order('creado_en', { ascending: false })
       .then(({ data }) => setEnvios(data ?? []))

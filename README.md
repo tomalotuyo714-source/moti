@@ -96,3 +96,17 @@ por un abogado comercial colombiano.
 
 Mientras el piloto sea gratuito y entre conocidos, no hay cobro ni
 intermediacion de dinero.
+
+---
+
+## Migraciones de base de datos
+
+Corralas en orden, una sola vez cada una, en **Supabase → SQL Editor**:
+
+1. `supabase/migrations/0001_init.sql` — esquema inicial y RLS.
+2. `supabase/migrations/0002_seguridad_token.sql` — correcciones de
+   seguridad: el token lo genera el servidor, la entrega se valida en el
+   servidor, eventos restringido a las partes y limite de intentos.
+
+**La 0002 no es opcional.** Sin ella, un capitan puede cerrar una entrega
+sin conocer el codigo del destinatario.

@@ -31,9 +31,14 @@ export default function CapitanViaje() {
       .order('orden')
     setParadas(p ?? [])
 
+    // Se piden las columnas una por una a proposito: la columna
+    // "token" esta revocada en la base de datos y un select * fallaria.
+    // El capitan nunca recibe el token; lo valida el servidor.
     const { data: e } = await supabase
       .from('envios')
-      .select('*, envio_items(*), paradas(muelle, orden)')
+      .select(
+        'id, viaje_id, parada_id, destinatario_nombre, kg_cobrables, fragil, pago, valor, estado, envio_items(id, tipo_caja, cantidad), paradas(muelle, orden)'
+      )
       .eq('viaje_id', id)
     setEnvios(e ?? [])
   }
@@ -196,19 +201,26 @@ function FilaEnvio({ envio, onCambio }) {
   const [abierto, setAbierto] = useState(false)
   const [codigo, setCodigo] = useState('')
   const [error, setError] = useState(null)
+  const [verificando, setVerificando] = useState(false)
 
+  // La comparacion del codigo NO se hace aqui. Se manda al servidor,
+  // que es el unico que conoce el token y el unico autorizado a
+  // marcar el envio como entregado.
   async function entregar() {
-    if (codigo.trim() !== envio.token) {
-      return setError('El codigo no coincide. No entregue la mercancia.')
-    }
-    await supabase.from('envios').update({ estado: 'entregado' }).eq('id', envio.id)
-    await supabase.from('eventos').insert({
-      envio_id: envio.id,
-      viaje_id: envio.viaje_id,
-      tipo: 'entrega',
-      mensaje: 'Mercancia entregada al destinatario con codigo verificado.',
-    })
+    setVerificando(true)
     setError(null)
+
+    const { data, error: err } = await supabase.rpc('entregar_envio', {
+      p_envio_id: envio.id,
+      p_token: codigo.trim(),
+    })
+
+    setVerificando(false)
+
+    if (err) return setError(err.message)
+    if (!data?.ok) return setError(data?.motivo ?? 'No se pudo cerrar la entrega.')
+
+    setCodigo('')
     setAbierto(false)
     onCambio()
   }
@@ -266,7 +278,9 @@ function FilaEnvio({ envio, onCambio }) {
               />
               {error && <div className="aviso critico">{error}</div>}
               <div style={{ height: 10 }} />
-              <button onClick={entregar}>Confirmar entrega</button>
+              <button onClick={entregar} disabled={verificando || codigo.trim().length !== 4}>
+                {verificando ? 'Verificando…' : 'Confirmar entrega'}
+              </button>
             </>
           )}
         </>
