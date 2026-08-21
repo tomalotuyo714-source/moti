@@ -1,32 +1,45 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase.js'
+import { consultar } from '../lib/red.js'
 import { fecha, pesos } from '../lib/carga.js'
+import { Cargando, ErrorRed, Vacio } from '../components/Estado.jsx'
 
 export default function CapitanViajes({ perfil }) {
-  const [barcos, setBarcos] = useState([])
+  const [barcos, setBarcos] = useState(null) // null = todavia no se sabe
   const [viajes, setViajes] = useState([])
+  const [error, setError] = useState(null)
   const [creando, setCreando] = useState(false)
 
-  async function cargar() {
-    const { data: b } = await supabase
-      .from('embarcaciones')
-      .select('*')
-      .eq('capitan_id', perfil.id)
-    setBarcos(b ?? [])
+  const cargar = useCallback(async () => {
+    if (!perfil) return
+    setError(null)
 
-    const { data: v } = await supabase
-      .from('viajes')
-      .select('*, embarcaciones(nombre)')
-      .eq('capitan_id', perfil.id)
-      .order('fecha_salida', { ascending: false })
-    setViajes(v ?? [])
-  }
+    const r1 = await consultar(
+      supabase.from('embarcaciones').select('*').eq('capitan_id', perfil.id)
+    )
+    // Si esto falla y dejaramos barcos en [], le mostrariamos el
+    // formulario de registrar embarcacion a un capitan que ya la tiene.
+    if (r1.error) return setError(r1.error)
+    setBarcos(r1.data ?? [])
 
-  useEffect(() => {
-    if (perfil) cargar()
+    const r2 = await consultar(
+      supabase
+        .from('viajes')
+        .select('*, embarcaciones(nombre)')
+        .eq('capitan_id', perfil.id)
+        .order('fecha_salida', { ascending: false })
+    )
+    if (r2.error) return setError(r2.error)
+    setViajes(r2.data ?? [])
   }, [perfil])
 
+  useEffect(() => {
+    cargar()
+  }, [cargar])
+
+  if (error) return <ErrorRed mensaje={error} onReintentar={cargar} />
+  if (barcos === null) return <Cargando />
   if (!barcos.length) return <NuevaEmbarcacion perfil={perfil} onListo={cargar} />
 
   return (
@@ -51,7 +64,7 @@ export default function CapitanViajes({ perfil }) {
         />
       )}
 
-      {!viajes.length && <div className="vacio">Aun no ha programado ningun viaje.</div>}
+      {!viajes.length && <Vacio>Aun no ha programado ningun viaje.</Vacio>}
 
       {viajes.map((v) => (
         <Link key={v.id} to={`/viajes/${v.id}`} style={{ textDecoration: 'none' }}>
@@ -80,16 +93,22 @@ function NuevaEmbarcacion({ perfil, onListo }) {
   const [matricula, setMatricula] = useState('')
   const [capacidad, setCapacidad] = useState(5000)
   const [error, setError] = useState(null)
+  const [guardando, setGuardando] = useState(false)
 
   async function guardar(e) {
     e.preventDefault()
-    const { error } = await supabase.from('embarcaciones').insert({
-      capitan_id: perfil.id,
-      nombre: nombre.trim(),
-      matricula: matricula.trim() || null,
-      capacidad_kg: Number(capacidad),
-    })
-    if (error) setError(error.message)
+    setGuardando(true)
+    setError(null)
+    const { error } = await consultar(
+      supabase.from('embarcaciones').insert({
+        capitan_id: perfil.id,
+        nombre: nombre.trim(),
+        matricula: matricula.trim() || null,
+        capacidad_kg: Number(capacidad),
+      })
+    )
+    setGuardando(false)
+    if (error) setError(error)
     else onListo()
   }
 
@@ -120,7 +139,7 @@ function NuevaEmbarcacion({ perfil, onListo }) {
 
         {error && <div className="aviso critico">{error}</div>}
         <div style={{ height: 16 }} />
-        <button>Guardar embarcacion</button>
+        <button disabled={guardando}>{guardando ? 'Guardando…' : 'Guardar embarcacion'}</button>
       </form>
     </div>
   )
@@ -150,32 +169,43 @@ function NuevoViaje({ perfil, barcos, onListo }) {
     setCargando(true)
     setError(null)
 
-    const { data: viaje, error: e1 } = await supabase
-      .from('viajes')
-      .insert({
-        embarcacion_id: barco,
-        capitan_id: perfil.id,
-        fecha_salida: new Date(salida).toISOString(),
-        aforo_kg: Number(aforo),
-        precio_por_kg: Number(precioKg || 0),
-        precio_por_tonelada: precioTon ? Number(precioTon) : null,
-      })
-      .select()
-      .single()
+    const r1 = await consultar(
+      supabase
+        .from('viajes')
+        .insert({
+          embarcacion_id: barco,
+          capitan_id: perfil.id,
+          fecha_salida: new Date(salida).toISOString(),
+          aforo_kg: Number(aforo),
+          precio_por_kg: Number(precioKg || 0),
+          precio_por_tonelada: precioTon ? Number(precioTon) : null,
+        })
+        .select()
+        .single()
+    )
 
-    if (e1) {
+    if (r1.error) {
       setCargando(false)
-      return setError(e1.message)
+      return setError(r1.error)
     }
 
     // Las paradas se guardan en el orden geografico de la ruta.
-    const { error: e2 } = await supabase
-      .from('paradas')
-      .insert(limpios.map((muelle, i) => ({ viaje_id: viaje.id, orden: i + 1, muelle })))
+    const r2 = await consultar(
+      supabase
+        .from('paradas')
+        .insert(limpios.map((muelle, i) => ({ viaje_id: r1.data.id, orden: i + 1, muelle })))
+    )
 
     setCargando(false)
-    if (e2) setError(e2.message)
-    else onListo()
+
+    // Un viaje sin paradas no le sirve a nadie: si esto falla, se
+    // borra el viaje para no dejar basura a medias en la cartelera.
+    if (r2.error) {
+      await consultar(supabase.from('viajes').delete().eq('id', r1.data.id))
+      return setError('No se pudieron guardar las paradas: ' + r2.error)
+    }
+
+    onListo()
   }
 
   return (

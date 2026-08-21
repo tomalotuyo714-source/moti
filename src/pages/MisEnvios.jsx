@@ -1,14 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase.js'
+import { consultar } from '../lib/red.js'
+import { Cargando, ErrorRed, Vacio } from '../components/Estado.jsx'
 import { pesos, fecha, ESTADOS_ENVIO } from '../lib/carga.js'
 
 export default function MisEnvios({ perfil }) {
-  const [envios, setEnvios] = useState([])
+  const [envios, setEnvios] = useState(null) // null = todavia no se sabe
+  const [error, setError] = useState(null)
   const [copiado, setCopiado] = useState(null)
 
-  useEffect(() => {
+  const cargar = useCallback(async () => {
     if (!perfil) return
-    supabase
+    setError(null)
+    const { data, error } = await consultar(
+      supabase
       .from('envios')
       // Columnas explicitas: la columna "token" esta revocada en la base
       // de datos y un select * fallaria. El remitente no ve el token.
@@ -17,8 +22,16 @@ export default function MisEnvios({ perfil }) {
       )
       .eq('remitente_id', perfil.id)
       .order('creado_en', { ascending: false })
-      .then(({ data }) => setEnvios(data ?? []))
+    )
+    // Un fallo de red no puede verse como "no tiene envios": el
+    // remitente pensaria que no quedo nada y reservaria cupo dos veces.
+    if (error) return setError(error)
+    setEnvios(data ?? [])
   }, [perfil])
+
+  useEffect(() => {
+    cargar()
+  }, [cargar])
 
   function compartir(envio) {
     const enlace = `${window.location.origin}/rastreo/${envio.codigo_publico}`
@@ -40,7 +53,9 @@ export default function MisEnvios({ perfil }) {
     }
   }
 
-  if (!envios.length) return <div className="vacio">Aun no ha registrado envios.</div>
+  if (error) return <ErrorRed mensaje={error} onReintentar={cargar} />
+  if (envios === null) return <Cargando />
+  if (!envios.length) return <Vacio>Aun no ha registrado envios.</Vacio>
 
   return (
     <>

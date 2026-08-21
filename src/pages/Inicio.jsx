@@ -1,8 +1,15 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase.js'
+import { consultar } from '../lib/red.js'
+import { Cargando, ErrorRed } from '../components/Estado.jsx'
 
-export default function Inicio({ perfil, onPerfil, sesion }) {
+export default function Inicio({ perfil, onPerfil, sesion, error, cargando, onReintentar }) {
+  // Un fallo de red no puede disfrazarse de "usuario nuevo": si se
+  // mostrara el formulario de perfil, el usuario lo llenaria otra vez
+  // y el insert fallaria por clave duplicada.
+  if (error) return <ErrorRed mensaje={error} onReintentar={onReintentar} />
+  if (cargando) return <Cargando />
   if (!perfil) return <CrearPerfil sesion={sesion} onPerfil={onPerfil} />
 
   return (
@@ -63,13 +70,15 @@ function CrearPerfil({ sesion, onPerfil }) {
     e.preventDefault()
     setCargando(true)
     setError(null)
-    const { data, error } = await supabase
-      .from('perfiles')
-      .insert({ id: sesion.user.id, nombre: nombre.trim(), telefono: telefono.trim(), rol })
-      .select()
-      .single()
+    const { data, error } = await consultar(
+      supabase
+        .from('perfiles')
+        .insert({ id: sesion.user.id, nombre: nombre.trim(), telefono: telefono.trim(), rol })
+        .select()
+        .single()
+    )
     setCargando(false)
-    if (error) setError(error.message)
+    if (error) setError(error)
     else onPerfil(data)
   }
 

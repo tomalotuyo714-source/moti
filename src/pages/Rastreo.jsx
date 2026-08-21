@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase.js'
+import { consultar } from '../lib/red.js'
 import { pesos, fecha, ESTADOS_ENVIO } from '../lib/carga.js'
 
 /**
@@ -25,21 +26,23 @@ export default function Rastreo() {
     setCargando(true)
     setError(null)
 
-    const { data, error: err } = await supabase.rpc('rastrear_envio', {
-      p_codigo: codigo.trim().toUpperCase(),
-      p_ultimos4: conTelefono ? ultimos4.trim() : null,
-    })
+    const { data, error: err } = await consultar(
+      supabase.rpc('rastrear_envio', {
+        p_codigo: codigo.trim().toUpperCase(),
+        p_ultimos4: conTelefono ? ultimos4.trim() : null,
+      })
+    )
 
     setCargando(false)
 
-    if (err) return setError(err.message)
+    if (err) return setError(err)
     if (!data || !data.length) return setError('No encontramos ningun envio con ese codigo.')
 
     setEnvio(data[0])
 
-    const { data: ev } = await supabase.rpc('eventos_publicos', {
-      p_codigo: codigo.trim().toUpperCase(),
-    })
+    const { data: ev } = await consultar(
+      supabase.rpc('eventos_publicos', { p_codigo: codigo.trim().toUpperCase() })
+    )
     setEventos(ev ?? [])
   }
 

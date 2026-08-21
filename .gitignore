@@ -6,3 +6,9 @@ dist
 *.log
 .DS_Store
 .vite
+
+# basura local que no va a github
+_to_delete/
+_node_modules.tgz
+_cambios.tgz
+arrancar.bat

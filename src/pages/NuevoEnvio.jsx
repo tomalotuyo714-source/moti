@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase.js'
+import { consultar, mensajeError } from '../lib/red.js'
+import { Cargando, ErrorRed } from '../components/Estado.jsx'
 import {
   TIPOS_CAJA,
   kilosCobrables,
@@ -15,6 +17,7 @@ export default function NuevoEnvio({ perfil }) {
   const [paso, setPaso] = useState(1)
   const [viajes, setViajes] = useState([])
   const [cargando, setCargando] = useState(true)
+  const [errorCarga, setErrorCarga] = useState(null)
 
   // Paso 1: inventario. Nunca se piden dimensiones (regla 4.11).
   const [cantidades, setCantidades] = useState({})
@@ -34,18 +37,27 @@ export default function NuevoEnvio({ perfil }) {
   const [error, setError] = useState(null)
   const [guardando, setGuardando] = useState(false)
 
-  useEffect(() => {
-    supabase
-      .from('viajes')
-      .select('*, embarcaciones(nombre), paradas(id, muelle, orden)')
-      .eq('estado', 'programado')
-      .gte('fecha_salida', new Date().toISOString())
-      .order('fecha_salida')
-      .then(({ data }) => {
-        setViajes(data ?? [])
-        setCargando(false)
-      })
+  const cargarViajes = useCallback(async () => {
+    setCargando(true)
+    setErrorCarga(null)
+    const { data, error } = await consultar(
+      supabase
+        .from('viajes')
+        .select('*, embarcaciones(nombre), paradas(id, muelle, orden)')
+        .eq('estado', 'programado')
+        .gte('fecha_salida', new Date().toISOString())
+        .order('fecha_salida')
+    )
+    setCargando(false)
+    // Si falla, no se muestra "no hay barcos": eso haria creer que
+    // nadie viaja esta semana cuando lo que fallo fue la senal.
+    if (error) return setErrorCarga(error)
+    setViajes(data ?? [])
   }, [])
+
+  useEffect(() => {
+    cargarViajes()
+  }, [cargarViajes])
 
   const items = useMemo(
     () =>
@@ -94,25 +106,38 @@ export default function NuevoEnvio({ perfil }) {
 
     if (e1) {
       setGuardando(false)
-      return setError(e1.message)
+      return setError(mensajeError(e1))
     }
 
-    await supabase
-      .from('envio_items')
-      .insert(items.map((i) => ({ ...i, envio_id: envio.id })))
+    // Un envio sin cajas no le sirve al capitan: veria un manifiesto
+    // vacio en el muelle. Si esto falla, se deshace el envio completo
+    // en vez de dejarlo a medias sin que el remitente se entere.
+    const rItems = await consultar(
+      supabase.from('envio_items').insert(items.map((i) => ({ ...i, envio_id: envio.id })))
+    )
+    if (rItems.error) {
+      await consultar(supabase.from('envios').delete().eq('id', envio.id))
+      setGuardando(false)
+      return setError('No se pudo registrar la carga: ' + rItems.error + ' Intente de nuevo.')
+    }
 
-    await supabase.from('eventos').insert({
-      envio_id: envio.id,
-      viaje_id: viajeId,
-      tipo: 'registro',
-      mensaje: 'Envio registrado y cupo reservado en la embarcacion.',
-    })
+    // El evento inicial es solo bitacora: si falla, no se pierde nada
+    // importante y no vale la pena deshacer un envio ya reservado.
+    await consultar(
+      supabase.from('eventos').insert({
+        envio_id: envio.id,
+        viaje_id: viajeId,
+        tipo: 'registro',
+        mensaje: 'Envio registrado y cupo reservado en la embarcacion.',
+      })
+    )
 
     setGuardando(false)
     navegar('/mis-envios')
   }
 
-  if (cargando) return <div className="vacio">Buscando barcos…</div>
+  if (errorCarga) return <ErrorRed mensaje={errorCarga} onReintentar={cargarViajes} />
+  if (cargando) return <Cargando texto="Buscando barcos…" />
 
   // ---------- PASO 1 ----------
   if (paso === 1)

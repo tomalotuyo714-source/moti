@@ -82,7 +82,9 @@ button {
 button:disabled { opacity: 0.45; cursor: not-allowed; }
 button.secundario { background: white; color: var(--verde); border: 1.5px solid var(--verde); }
 button.ambar { background: var(--ambar); color: #3a2600; }
-button.chico { width: auto; min-height: 44px; padding: 8px 14px; font-size: 15px; }
+/* 48px minimo tambien en los botones chicos: se usan con guantes
+   de moto y con el barco en movimiento. */
+button.chico { width: auto; min-height: 48px; padding: 10px 14px; font-size: 15px; }
 
 .fila { display: flex; gap: 8px; align-items: center; }
 .fila > * { flex: 1; }
@@ -102,7 +104,7 @@ button.chico { width: auto; min-height: 44px; padding: 8px 14px; font-size: 15px
 .pieza .nombre { font-weight: 600; font-size: 15px; }
 .pieza .ej { color: var(--gris); font-size: 13px; }
 .pieza .contador { display: flex; align-items: center; gap: 8px; }
-.pieza .contador button { width: 40px; min-height: 40px; padding: 0; font-size: 20px; }
+.pieza .contador button { width: 48px; min-height: 48px; padding: 0; font-size: 22px; }
 .pieza .contador span { min-width: 26px; text-align: center; font-weight: 700; }
 
 .etiqueta {
@@ -115,7 +117,9 @@ button.chico { width: auto; min-height: 44px; padding: 8px 14px; font-size: 15px
 .etiqueta.verde { background: #e3f4ec; color: #0b6e5e; }
 .etiqueta.ambar { background: #fdf0dc; color: #8a5a12; }
 .etiqueta.gris { background: #eef0ef; color: #4b5563; }
-.etiqueta.roja { background: #ffe5e5; color: var(--alerta); }
+/* El rojo puro sobre rosado no se lee bajo el sol del muelle.
+   Se oscurece el texto y se le pone borde para que salte a la vista. */
+.etiqueta.roja { background: #ffe5e5; color: #a30000; border: 1.5px solid var(--alerta); }
 
 .token {
   font-size: 44px;

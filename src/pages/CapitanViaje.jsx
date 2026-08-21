@@ -1,104 +1,203 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase.js'
+import { consultar } from '../lib/red.js'
 import { fecha, pesos, ESTADOS_ENVIO } from '../lib/carga.js'
+import { Cargando, ErrorRed, Vacio } from '../components/Estado.jsx'
+
+const COLUMNAS_ENVIO =
+  'id, viaje_id, parada_id, destinatario_nombre, kg_cobrables, fragil, pago, valor, estado, ' +
+  'envio_items(id, tipo_caja, cantidad), paradas(muelle, orden)'
 
 /**
  * Manifiesto digital del capitan (regla 4.13).
- * El capitan marca la llegada a cada muelle; eso dispara el aviso
- * a los clientes de esa parada y a los de la siguiente.
- * La entrega solo se cierra con el token del destinatario (regla 4.18).
+ *
+ * Las acciones de zarpe y de llegada hacen VARIAS escrituras seguidas.
+ * Con senal mala, una puede fallar despues de que otra tuvo exito. Si
+ * eso pasa en silencio, el barco figura navegando pero a los clientes
+ * nunca les llego el aviso. Por eso cada paso se verifica y, si falla,
+ * la operacion se puede retomar exactamente desde donde se rompio.
  */
 export default function CapitanViaje() {
   const { id } = useParams()
   const [viaje, setViaje] = useState(null)
   const [paradas, setParadas] = useState([])
   const [envios, setEnvios] = useState([])
+  const [error, setError] = useState(null)
+  const [cargando, setCargando] = useState(true)
+
   const [mensaje, setMensaje] = useState(null)
+  const [fallo, setFallo] = useState(null) // { texto, reintentar }
+  const [ocupado, setOcupado] = useState(false)
 
-  async function cargar() {
-    const { data: v } = await supabase
-      .from('viajes')
-      .select('*, embarcaciones(nombre, capacidad_kg)')
-      .eq('id', id)
-      .maybeSingle()
-    setViaje(v)
+  const cargar = useCallback(async () => {
+    setCargando(true)
+    setError(null)
 
-    const { data: p } = await supabase
-      .from('paradas')
-      .select('*')
-      .eq('viaje_id', id)
-      .order('orden')
-    setParadas(p ?? [])
+    const r1 = await consultar(
+      supabase
+        .from('viajes')
+        .select('*, embarcaciones(nombre, capacidad_kg)')
+        .eq('id', id)
+        .maybeSingle()
+    )
+    if (r1.error) {
+      setCargando(false)
+      return setError(r1.error)
+    }
+    setViaje(r1.data)
 
-    // Se piden las columnas una por una a proposito: la columna
-    // "token" esta revocada en la base de datos y un select * fallaria.
-    // El capitan nunca recibe el token; lo valida el servidor.
-    const { data: e } = await supabase
-      .from('envios')
-      .select(
-        'id, viaje_id, parada_id, destinatario_nombre, kg_cobrables, fragil, pago, valor, estado, envio_items(id, tipo_caja, cantidad), paradas(muelle, orden)'
-      )
-      .eq('viaje_id', id)
-    setEnvios(e ?? [])
-  }
+    const r2 = await consultar(
+      supabase.from('paradas').select('*').eq('viaje_id', id).order('orden')
+    )
+    if (r2.error) {
+      setCargando(false)
+      return setError(r2.error)
+    }
+    setParadas(r2.data ?? [])
+
+    const r3 = await consultar(
+      supabase.from('envios').select(COLUMNAS_ENVIO).eq('viaje_id', id)
+    )
+    if (r3.error) {
+      setCargando(false)
+      return setError(r3.error)
+    }
+    setEnvios(r3.data ?? [])
+    setCargando(false)
+  }, [id])
 
   useEffect(() => {
     cargar()
-  }, [id])
+  }, [cargar])
 
-  if (!viaje) return <div className="vacio">Cargando…</div>
+  if (error) return <ErrorRed mensaje={error} onReintentar={cargar} />
+  if (cargando && !viaje) return <Cargando />
+  if (!viaje) return <Vacio>No se encontro este viaje.</Vacio>
 
   const cargados = envios
     .filter((e) => e.estado !== 'cancelado')
     .reduce((t, e) => t + Number(e.kg_cobrables), 0)
   const disponible = Number(viaje.aforo_kg) - cargados
 
-  async function zarpar() {
-    await supabase.from('viajes').update({ estado: 'en_navegacion' }).eq('id', id)
-    await supabase
-      .from('envios')
-      .update({ estado: 'en_navegacion' })
-      .eq('viaje_id', id)
-      .neq('estado', 'cancelado')
-    await supabase.from('eventos').insert(
-      envios.map((e) => ({
-        envio_id: e.id,
-        viaje_id: id,
-        tipo: 'zarpe',
-        mensaje: `La embarcacion ${viaje.embarcaciones?.nombre} zarpo de ${viaje.origen}.`,
-      }))
+  // ---------------------------------------------------------------
+  // ZARPE
+  // Orden a proposito: primero los avisos a los clientes, y de ultimo
+  // el estado del viaje. Asi, si algo falla, el boton "Marcar como
+  // zarpado" sigue visible y se puede reintentar.
+  // ---------------------------------------------------------------
+  async function zarpar(desde = 1) {
+    setOcupado(true)
+    setFallo(null)
+    setMensaje(null)
+
+    const vivos = envios.filter((e) => e.estado !== 'cancelado')
+
+    if (desde <= 1 && vivos.length) {
+      const r = await consultar(
+        supabase
+          .from('envios')
+          .update({ estado: 'en_navegacion' })
+          .eq('viaje_id', id)
+          .neq('estado', 'cancelado')
+      )
+      if (r.error) {
+        setOcupado(false)
+        return setFallo({
+          texto: 'No se pudo actualizar la carga: ' + r.error,
+          reintentar: () => zarpar(1),
+        })
+      }
+    }
+
+    if (desde <= 2 && vivos.length) {
+      const r = await consultar(
+        supabase.from('eventos').insert(
+          vivos.map((e) => ({
+            envio_id: e.id,
+            viaje_id: id,
+            tipo: 'zarpe',
+            mensaje: `La embarcacion ${viaje.embarcaciones?.nombre} zarpo de ${viaje.origen}.`,
+          }))
+        )
+      )
+      if (r.error) {
+        setOcupado(false)
+        return setFallo({
+          texto: 'La carga quedo actualizada, pero no se pudo avisar a los clientes: ' + r.error,
+          reintentar: () => zarpar(2),
+        })
+      }
+    }
+
+    const r3 = await consultar(
+      supabase.from('viajes').update({ estado: 'en_navegacion' }).eq('id', id)
     )
+    setOcupado(false)
+    if (r3.error) {
+      return setFallo({
+        texto: 'Los clientes ya fueron avisados, pero falta marcar el viaje: ' + r3.error,
+        reintentar: () => zarpar(3),
+      })
+    }
+
     setMensaje('Viaje marcado como en navegacion. Los clientes ya lo ven.')
     cargar()
   }
 
-  async function llegarA(parada) {
-    await supabase
-      .from('paradas')
-      .update({ estado: 'descargando', hora_llegada: new Date().toISOString() })
-      .eq('id', parada.id)
+  // ---------------------------------------------------------------
+  // LLEGADA A UN MUELLE
+  // Primero los avisos, de ultimo el estado de la parada, por la
+  // misma razon: que el boton "Llegue" no desaparezca si algo falla.
+  // ---------------------------------------------------------------
+  async function llegarA(parada, desde = 1) {
+    setOcupado(true)
+    setFallo(null)
+    setMensaje(null)
 
-    // Aviso a los clientes de ESTE muelle.
     const deEste = envios.filter((e) => e.parada_id === parada.id && e.estado !== 'entregado')
-    if (deEste.length) {
-      await supabase.from('envios').update({ estado: 'en_muelle' }).in('id', deEste.map((e) => e.id))
-      await supabase.from('eventos').insert(
-        deEste.map((e) => ({
-          envio_id: e.id,
-          viaje_id: id,
-          tipo: 'llegada',
-          mensaje: `El barco esta descargando en ${parada.muelle} en este momento. Acerquese con su codigo de retiro.`,
-        }))
+    const siguiente = paradas.find((p) => p.orden === parada.orden + 1)
+    const deSiguiente = siguiente ? envios.filter((e) => e.parada_id === siguiente.id) : []
+
+    if (desde <= 1 && deEste.length) {
+      const r = await consultar(
+        supabase
+          .from('envios')
+          .update({ estado: 'en_muelle' })
+          .in('id', deEste.map((e) => e.id))
       )
+      if (r.error) {
+        setOcupado(false)
+        return setFallo({
+          texto: 'No se pudo actualizar la carga de este muelle: ' + r.error,
+          reintentar: () => llegarA(parada, 1),
+        })
+      }
     }
 
-    // Aviso de proximidad a los del muelle siguiente.
-    const siguiente = paradas.find((p) => p.orden === parada.orden + 1)
-    if (siguiente) {
-      const deSiguiente = envios.filter((e) => e.parada_id === siguiente.id)
-      if (deSiguiente.length) {
-        await supabase.from('eventos').insert(
+    if (desde <= 2 && deEste.length) {
+      const r = await consultar(
+        supabase.from('eventos').insert(
+          deEste.map((e) => ({
+            envio_id: e.id,
+            viaje_id: id,
+            tipo: 'llegada',
+            mensaje: `El barco esta descargando en ${parada.muelle} en este momento. Acerquese con su codigo de retiro.`,
+          }))
+        )
+      )
+      if (r.error) {
+        setOcupado(false)
+        return setFallo({
+          texto: 'No se pudo avisar a los clientes de este muelle: ' + r.error,
+          reintentar: () => llegarA(parada, 2),
+        })
+      }
+    }
+
+    if (desde <= 3 && deSiguiente.length) {
+      const r = await consultar(
+        supabase.from('eventos').insert(
           deSiguiente.map((e) => ({
             envio_id: e.id,
             viaje_id: id,
@@ -106,18 +205,50 @@ export default function CapitanViaje() {
             mensaje: `El barco llego a ${parada.muelle}. Su muelle (${siguiente.muelle}) es el siguiente de la ruta.`,
           }))
         )
+      )
+      if (r.error) {
+        setOcupado(false)
+        return setFallo({
+          texto: 'No se pudo avisar al muelle siguiente: ' + r.error,
+          reintentar: () => llegarA(parada, 3),
+        })
       }
     }
 
-    setMensaje(`Llegada a ${parada.muelle} registrada. Se avisó a los clientes.`)
+    const r4 = await consultar(
+      supabase
+        .from('paradas')
+        .update({ estado: 'descargando', hora_llegada: new Date().toISOString() })
+        .eq('id', parada.id)
+    )
+    setOcupado(false)
+    if (r4.error) {
+      return setFallo({
+        texto: 'Los avisos salieron, pero falta marcar la parada: ' + r4.error,
+        reintentar: () => llegarA(parada, 4),
+      })
+    }
+
+    setMensaje(`Llegada a ${parada.muelle} registrada. Se aviso a los clientes.`)
     cargar()
   }
 
   async function completarParada(parada) {
-    await supabase
-      .from('paradas')
-      .update({ estado: 'completada', hora_salida: new Date().toISOString() })
-      .eq('id', parada.id)
+    setOcupado(true)
+    setFallo(null)
+    const r = await consultar(
+      supabase
+        .from('paradas')
+        .update({ estado: 'completada', hora_salida: new Date().toISOString() })
+        .eq('id', parada.id)
+    )
+    setOcupado(false)
+    if (r.error) {
+      return setFallo({
+        texto: 'No se pudo cerrar la parada: ' + r.error,
+        reintentar: () => completarParada(parada),
+      })
+    }
     cargar()
   }
 
@@ -140,13 +271,26 @@ export default function CapitanViaje() {
             </strong>
           </div>
         </div>
+
         {viaje.estado === 'programado' && (
           <>
             <div style={{ height: 12 }} />
-            <button onClick={zarpar}>Marcar como zarpado</button>
+            <button onClick={() => zarpar()} disabled={ocupado}>
+              {ocupado ? 'Enviando…' : 'Marcar como zarpado'}
+            </button>
           </>
         )}
+
         {mensaje && <div className="aviso">{mensaje}</div>}
+        {fallo && (
+          <div className="aviso critico">
+            {fallo.texto}
+            <div style={{ height: 8 }} />
+            <button onClick={fallo.reintentar} disabled={ocupado}>
+              Reintentar
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="tarjeta">
@@ -164,7 +308,12 @@ export default function CapitanViaje() {
                 </div>
               </div>
               {viaje.estado === 'en_navegacion' && p.estado === 'pendiente' && (
-                <button className="chico ambar" style={{ flex: '0 0 auto' }} onClick={() => llegarA(p)}>
+                <button
+                  className="chico ambar"
+                  style={{ flex: '0 0 auto' }}
+                  disabled={ocupado}
+                  onClick={() => llegarA(p)}
+                >
                   Llegue
                 </button>
               )}
@@ -172,6 +321,7 @@ export default function CapitanViaje() {
                 <button
                   className="chico secundario"
                   style={{ flex: '0 0 auto' }}
+                  disabled={ocupado}
                   onClick={() => completarParada(p)}
                 >
                   Zarpar
@@ -185,7 +335,7 @@ export default function CapitanViaje() {
       <div className="tarjeta">
         <h3>Manifiesto ({envios.length})</h3>
         <p className="sub">Ordenado por muelle de la ruta.</p>
-        {!envios.length && <div className="vacio">Sin carga reservada todavia.</div>}
+        {!envios.length && <Vacio>Sin carga reservada todavia.</Vacio>}
         {envios
           .slice()
           .sort((a, b) => (a.paradas?.orden ?? 0) - (b.paradas?.orden ?? 0))
@@ -210,14 +360,13 @@ function FilaEnvio({ envio, onCambio }) {
     setVerificando(true)
     setError(null)
 
-    const { data, error: err } = await supabase.rpc('entregar_envio', {
-      p_envio_id: envio.id,
-      p_token: codigo.trim(),
-    })
+    const { data, error: err } = await consultar(
+      supabase.rpc('entregar_envio', { p_envio_id: envio.id, p_token: codigo.trim() })
+    )
 
     setVerificando(false)
 
-    if (err) return setError(err.message)
+    if (err) return setError(err)
     if (!data?.ok) return setError(data?.motivo ?? 'No se pudo cerrar la entrega.')
 
     setCodigo('')
