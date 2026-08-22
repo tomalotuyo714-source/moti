@@ -12,7 +12,7 @@
 export const TIPOS_CAJA = [
   {
     id: 'pequena',
-    etiqueta: 'Caja pequena',
+    etiqueta: 'Caja pequeña',
     ejemplo: 'Caja de cerveza, abarrotes',
     icono: '📦',
     volumenEquivalenteKg: 8,
@@ -20,21 +20,21 @@ export const TIPOS_CAJA = [
   {
     id: 'mediana',
     etiqueta: 'Caja mediana',
-    ejemplo: 'Caja de carton estandar',
+    ejemplo: 'Caja de cartón estándar',
     icono: '📦',
     volumenEquivalenteKg: 18,
   },
   {
     id: 'grande',
-    etiqueta: 'Caja grande / liviana',
-    ejemplo: 'Pacas de papel higienico, icopor',
+    etiqueta: 'Caja grande o liviana',
+    ejemplo: 'Pacas de papel higiénico, icopor',
     icono: '🧻',
     volumenEquivalenteKg: 35,
   },
   {
     id: 'bulto',
     etiqueta: 'Bulto de lona',
-    ejemplo: 'Viveres, cemento, granos',
+    ejemplo: 'Víveres, cemento, granos',
     icono: '🧳',
     volumenEquivalenteKg: 25,
   },

@@ -27,7 +27,7 @@ export default function Cuenta({ perfil, sesion }) {
             <Persona size={30} />
           </span>
           <span style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em' }}>
+            <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em' }}>
               {perfil?.nombre}
             </div>
             <div className="mini">
