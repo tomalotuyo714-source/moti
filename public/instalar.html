@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="color-scheme" content="dark" />
+    <title>Instalar Moti</title>
+    <style>
+      :root { --fondo:#000; --sup:#0e0e0e; --sup2:#1a1a1a; --linea:#1f1f1f;
+              --texto:#fff; --texto2:#a3a3a3; --texto3:#6f6f6f; --verde:#14d19a; --ambar:#f2a33c; }
+      * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+      html, body { margin:0; background:var(--fondo); }
+      body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+             color: var(--texto); font-size:16px; line-height:1.5; }
+      main { max-width:520px; margin:0 auto; padding:36px 20px 60px; }
+      .marca { display:flex; align-items:center; gap:16px; margin-bottom:26px; }
+      .marca img { width:78px; height:78px; border-radius:22%; }
+      h1 { font-size:34px; letter-spacing:-.03em; margin:0; line-height:1.1; }
+      .lema { color:var(--texto2); font-size:16px; margin-top:4px; }
+      .cta { display:block; width:100%; min-height:56px; padding:16px;
+             border:none; border-radius:10px; background:#fff; color:#000;
+             font-size:17px; font-weight:600; text-align:center; text-decoration:none;
+             font-family:inherit; letter-spacing:-.01em; }
+      .secundario { display:block; width:100%; min-height:52px; padding:15px;
+             border:1px solid #333; border-radius:10px; background:transparent;
+             color:var(--texto); font-size:16px; font-weight:600; text-align:center;
+             text-decoration:none; margin-top:10px; }
+      h2 { font-size:18px; margin:34px 0 12px; letter-spacing:-.02em; }
+      ol { padding-left:22px; margin:0; }
+      li { margin-bottom:12px; color:#dcdcdc; }
+      .aviso { background:var(--sup2); border-left:3px solid var(--ambar);
+               padding:14px; border-radius:10px; font-size:14.5px; color:var(--texto2); margin:20px 0; }
+      .aviso strong { color:var(--texto); }
+      .mini { font-size:13px; color:var(--texto3); }
+      .caja { background:var(--sup); border-radius:14px; padding:18px; margin:20px 0; }
+      a { color: var(--verde); }
+      hr { border:none; border-top:1px solid var(--linea); margin:32px 0; }
+      .oculto { display:none; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="marca">
+        <img src="/icono-512.png" alt="" />
+        <div>
+          <h1>Moti</h1>
+          <div class="lema">Envíos y rastreo por el río Amazonas</div>
+        </div>
+      </div>
+
+      <!-- Android: se ofrece el APK -->
+      <div id="android" class="oculto">
+        <a class="cta" id="descargar" href="#">Descargar la app</a>
+        <a class="secundario" href="/">Abrirla sin instalar nada</a>
+
+        <h2>Cómo instalarla</h2>
+        <ol>
+          <li>Toque <strong>Descargar la app</strong>. Se baja un archivo llamado
+              <strong>moti.apk</strong>.</li>
+          <li>Abra el archivo descargado.</li>
+          <li>Android le va a decir que no puede instalar de esta fuente. Toque
+              <strong>Configuración</strong> y active el permiso para este navegador.
+              Es normal: pasa con cualquier app que no venga de Play.</li>
+          <li>Vuelva atrás y toque <strong>Instalar</strong>.</li>
+        </ol>
+
+        <div class="aviso">
+          <strong>Mientras Moti no esté en Google Play</strong>, esta es la forma de
+          instalarla. Ya está en trámite. Si prefiere no instalar nada, la app funciona
+          igual desde el navegador con el botón de arriba.
+        </div>
+      </div>
+
+      <!-- iPhone: todavia no hay app; se explica el atajo -->
+      <div id="iphone" class="oculto">
+        <a class="cta" href="/">Abrir Moti</a>
+
+        <h2>Para dejarla como una app</h2>
+        <ol>
+          <li>Abra Moti con el botón de arriba, en <strong>Safari</strong>.</li>
+          <li>Toque el botón de compartir (el cuadrito con la flecha).</li>
+          <li>Elija <strong>Agregar a inicio</strong>.</li>
+        </ol>
+        <div class="aviso">
+          Queda con su icono en la pantalla, igual que cualquier otra app. La versión
+          para App Store está en camino.
+        </div>
+      </div>
+
+      <!-- Computador u otro -->
+      <div id="otro" class="oculto">
+        <a class="cta" href="/">Abrir Moti</a>
+        <div class="aviso">
+          Para instalarla en el celular, abra esta misma página desde el teléfono.
+        </div>
+      </div>
+
+      <div class="caja">
+        <h2 style="margin-top:0">¿Le mandaron una mercancía?</h2>
+        <p class="mini" style="margin:0 0 14px">
+          No necesita instalar nada ni crear cuenta. Entre con el código que le
+          compartieron.
+        </p>
+        <a class="secundario" style="margin-top:0" href="/rastreo">Rastrear un envío</a>
+      </div>
+
+      <hr />
+      <p class="mini">
+        Moti es una plataforma de intermediación tecnológica: conecta operadores
+        independientes con quienes mueven mercancía. No custodia, no inspecciona y no
+        responde por la carga. ·
+        <a href="/privacidad.html">Política de datos</a>
+      </p>
+    </main>
+
+    <script>
+      // El enlace del APK apunta al ultimo Release publicado del
+      // repositorio. Esa direccion no cambia nunca, asi que se puede
+      // mandar por WhatsApp una sola vez y sirve para siempre.
+      var APK =
+        'https://github.com/tomalotuyo714-source/moti/releases/latest/download/moti.apk'
+
+      var ua = navigator.userAgent || ''
+      var esAndroid = /Android/i.test(ua)
+      var esIOS = /iPhone|iPad|iPod/i.test(ua)
+
+      if (esAndroid) {
+        document.getElementById('descargar').href = APK
+        document.getElementById('android').classList.remove('oculto')
+      } else if (esIOS) {
+        document.getElementById('iphone').classList.remove('oculto')
+      } else {
+        document.getElementById('otro').classList.remove('oculto')
+      }
+    </script>
+  </body>
+</html>

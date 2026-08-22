@@ -11,6 +11,14 @@
 #   moti-aab    -> el que se sube a Play Console
 #   moti-apk    -> para instalar directo en un celular y probar
 #
+# Ademas publica el APK como Release del repositorio, con lo cual
+# queda en una direccion publica y fija que se puede abrir desde
+# cualquier celular:
+#
+#   https://github.com/<usuario>/moti/releases/latest/download/moti.apk
+#
+# Eso es lo que se le manda a los 12 testers y a los capitanes.
+#
 # Secretos que hay que crear en Settings -> Secrets and variables
 # -> Actions (los cuatro de firma solo cuando exista el llavero):
 #   VITE_SUPABASE_URL
@@ -35,7 +43,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  # write porque el trabajo publica el APK como Release
+  contents: write
 
 jobs:
   compilar:
@@ -90,6 +99,7 @@ jobs:
           fi
 
       - name: Compilar AAB y APK
+        id: compilar
         working-directory: android
         env:
           MOTI_KEYSTORE_FILE: ${{ steps.firma.outputs.hay == 'si' && format('{0}/moti.jks', runner.temp) || '' }}
@@ -102,7 +112,16 @@ jobs:
           MOTI_VERSION_NAME: 1.0.${{ github.run_number }}
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon bundleRelease assembleDebug
+          if [ -n "$MOTI_KEYSTORE_FILE" ]; then
+            # Con llavero: APK de release, firmado con la llave de subida.
+            ./gradlew --no-daemon bundleRelease assembleRelease
+            echo "apk=app/build/outputs/apk/release/app-release.apk" >> "$GITHUB_OUTPUT"
+          else
+            # Sin llavero todavia: APK de depuracion. Se instala igual
+            # en un celular y sirve para probar; a Play no se sube.
+            ./gradlew --no-daemon bundleRelease assembleDebug
+            echo "apk=app/build/outputs/apk/debug/app-debug.apk" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Guardar el AAB
         uses: actions/upload-artifact@v4
@@ -116,9 +135,45 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: moti-apk
-          path: android/app/build/outputs/apk/debug/*.apk
+          path: android/${{ steps.compilar.outputs.apk }}
           if-no-files-found: warn
           retention-days: 30
+
+      # ----------------------------------------------------------
+      # Publicar el APK en una direccion fija
+      #
+      # Un artifact de Actions solo lo puede bajar quien tenga cuenta
+      # de GitHub y dura 30 dias. Un Release es publico, no caduca y
+      # la direccion no cambia: es lo que se le pasa a un capitan por
+      # WhatsApp para que instale la app.
+      # ----------------------------------------------------------
+      - name: Preparar el APK para publicar
+        run: |
+          mkdir -p publicar
+          cp "android/${{ steps.compilar.outputs.apk }}" publicar/moti.apk
+          ls -lh publicar/
+
+      - name: Publicar como Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Moti 1.0.${{ github.run_number }}
+          body: |
+            App de Moti para Android.
+
+            **Para instalarla en el celular:** abra este enlace desde el
+            teléfono, descargue `moti.apk` y ábralo. Android va a pedir
+            permiso para instalar desde esta fuente: acéptelo.
+
+            | | |
+            |---|---|
+            | Versión | 1.0.${{ github.run_number }} |
+            | Firmada con la llave de subida | ${{ steps.firma.outputs.hay == 'si' && 'sí' || 'no — es una compilación de prueba' }} |
+
+            Si prefiere no instalar nada, la misma app funciona en el
+            navegador: https://moti-zeta.vercel.app
+          files: publicar/moti.apk
+          make_latest: true
 
       - name: Resumen
         run: |
