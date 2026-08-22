@@ -49,7 +49,7 @@ insert into auth.users (
 -- -------------------------------------------------------------
 insert into perfiles (id, nombre, telefono, rol, creado_en) values
   ('11111111-1111-4111-8111-111111111111',
-   'Capitan de muestra', '+57 300 000 0001', 'capitan', now() - interval '40 days'),
+   'Capitán de muestra', '+57 300 000 0001', 'capitan', now() - interval '40 days'),
   ('22222222-2222-4222-8222-222222222222',
    'Comerciante de muestra', '+57 300 000 0002', 'remitente', now() - interval '30 days');
 
@@ -62,7 +62,7 @@ insert into embarcaciones (id, capitan_id, nombre, matricula, capacidad_kg, crea
    'Nuevo Amanecer', 'DEMO-001', 8000, now() - interval '40 days'),
   ('aaaaaaaa-0000-4000-8000-000000000002',
    '11111111-1111-4111-8111-111111111111',
-   'Estrella del Rio', 'DEMO-002', 12000, now() - interval '20 days');
+   'Estrella del Río', 'DEMO-002', 12000, now() - interval '20 days');
 
 -- -------------------------------------------------------------
 -- 4. Viajes
@@ -78,14 +78,14 @@ insert into viajes (
    '11111111-1111-4111-8111-111111111111',
    'Leticia', now() + interval '3 days', 'programado',
    8000, 2500, 1800000,
-   'Recibo carga hasta el dia anterior a mediodia. No llevo combustible ni animales vivos.',
+   'Recibo carga hasta el día anterior a mediodía. No llevo combustible ni animales vivos.',
    now() - interval '6 days'),
   ('bbbbbbbb-0000-4000-8000-000000000002',
    'aaaaaaaa-0000-4000-8000-000000000002',
    '11111111-1111-4111-8111-111111111111',
    'Leticia', now() - interval '2 days', 'en_navegacion',
    12000, 2800, 2100000,
-   'Viaje largo. La llegada depende del nivel del rio.',
+   'Viaje largo. La llegada depende del nivel del río.',
    now() - interval '12 days');
 
 -- -------------------------------------------------------------
@@ -93,14 +93,14 @@ insert into viajes (
 -- -------------------------------------------------------------
 insert into paradas (id, viaje_id, orden, muelle, estado, hora_llegada, hora_salida) values
   ('cccccccc-0000-4000-8000-000000000001',
-   'bbbbbbbb-0000-4000-8000-000000000001', 1, 'Puerto Narino',   'pendiente', null, null),
+   'bbbbbbbb-0000-4000-8000-000000000001', 1, 'Puerto Nariño',   'pendiente', null, null),
   ('cccccccc-0000-4000-8000-000000000002',
-   'bbbbbbbb-0000-4000-8000-000000000001', 2, 'Santa Sofia',     'pendiente', null, null),
+   'bbbbbbbb-0000-4000-8000-000000000001', 2, 'Santa Sofía',     'pendiente', null, null),
   ('cccccccc-0000-4000-8000-000000000003',
-   'bbbbbbbb-0000-4000-8000-000000000002', 1, 'Puerto Narino',   'completada',
+   'bbbbbbbb-0000-4000-8000-000000000002', 1, 'Puerto Nariño',   'completada',
    now() - interval '32 hours', now() - interval '30 hours'),
   ('cccccccc-0000-4000-8000-000000000004',
-   'bbbbbbbb-0000-4000-8000-000000000002', 2, 'Tarapaca',        'proximo', null, null),
+   'bbbbbbbb-0000-4000-8000-000000000002', 2, 'Tarapacá',        'proximo', null, null),
   ('cccccccc-0000-4000-8000-000000000005',
    'bbbbbbbb-0000-4000-8000-000000000002', 3, 'La Chorrera',     'pendiente', null, null);
 
@@ -167,23 +167,23 @@ insert into eventos (envio_id, viaje_id, tipo, mensaje, creado_en) values
    now() - interval '2 days'),
 
   ('dddddddd-0000-4000-8000-000000000002', 'bbbbbbbb-0000-4000-8000-000000000002',
-   'registro', 'Carga registrada y cupo reservado en la Estrella del Rio.',
+   'registro', 'Carga registrada y cupo reservado en la Estrella del Río.',
    now() - interval '9 days'),
   ('dddddddd-0000-4000-8000-000000000002', 'bbbbbbbb-0000-4000-8000-000000000002',
-   'zarpe',    'La embarcacion zarpo de Leticia.',
+   'zarpe',    'La embarcación zarpó de Leticia.',
    now() - interval '2 days'),
   ('dddddddd-0000-4000-8000-000000000002', 'bbbbbbbb-0000-4000-8000-000000000002',
-   'parada',   'Paso por Puerto Narino. Siguiente muelle: Tarapaca.',
+   'parada',   'Pasó por Puerto Nariño. Siguiente muelle: Tarapacá.',
    now() - interval '30 hours'),
 
   ('dddddddd-0000-4000-8000-000000000003', 'bbbbbbbb-0000-4000-8000-000000000002',
-   'registro', 'Carga registrada. Marcada como FRAGIL.',
+   'registro', 'Carga registrada. Marcada como FRÁGIL.',
    now() - interval '10 days'),
   ('dddddddd-0000-4000-8000-000000000003', 'bbbbbbbb-0000-4000-8000-000000000002',
-   'zarpe',    'La embarcacion zarpo de Leticia.',
+   'zarpe',    'La embarcación zarpó de Leticia.',
    now() - interval '2 days'),
   ('dddddddd-0000-4000-8000-000000000003', 'bbbbbbbb-0000-4000-8000-000000000002',
-   'parada',   'Paso por Puerto Narino. Siguiente muelle: Tarapaca.',
+   'parada',   'Pasó por Puerto Nariño. Siguiente muelle: Tarapacá.',
    now() - interval '30 hours');
 
 -- -------------------------------------------------------------

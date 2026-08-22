@@ -12,7 +12,7 @@
 //      manifiesto viejo seria peor que no mostrarle nada.
 // -------------------------------------------------------------
 
-const CACHE = 'moti-v1'
+const CACHE = 'moti-v2'
 const ESQUELETO = ['/', '/index.html', '/manifest.webmanifest', '/icono-192.png', '/icono-512.png']
 
 self.addEventListener('install', (evento) => {

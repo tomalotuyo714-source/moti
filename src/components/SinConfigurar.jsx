@@ -1,7 +1,7 @@
 // Pantalla que reemplaza al error en blanco cuando falta el .env.
 export default function SinConfigurar() {
   return (
-    <div className="tarjeta">
+    <div className="bloque">
       <h2>Falta conectar la base de datos</h2>
       <p className="sub">
         La aplicacion esta bien instalada, pero todavia no sabe a que servidor

@@ -95,7 +95,7 @@ export function fecha(iso) {
 export const ESTADOS_ENVIO = {
   registrado: { texto: 'Registrado', color: 'gris' },
   a_bordo: { texto: 'A bordo', color: 'ambar' },
-  en_navegacion: { texto: 'En navegacion', color: 'verde' },
+  en_navegacion: { texto: 'En navegación', color: 'verde' },
   en_muelle: { texto: 'Llegando al muelle', color: 'ambar' },
   entregado: { texto: 'Entregado', color: 'verde' },
   cancelado: { texto: 'Cancelado', color: 'gris' },

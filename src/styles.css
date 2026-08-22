@@ -1,173 +1,1023 @@
-/* Identidad visual definida en la Seccion 19.6 del documento.
-   El rojo #FF0000 esta reservado: solo alertas criticas. */
+/* =============================================================
+   MOTI - Sistema visual
+   -------------------------------------------------------------
+   Interfaz oscura de alto contraste, al estilo de las apps de
+   movilidad que la gente del nodo ya tiene instaladas. La ventaja
+   no es estetica: es que el capitan y el comerciante no tienen
+   que aprender una gramatica nueva.
+
+   Sobre el sol del muelle: el fondo negro puro con texto blanco
+   puro da la relacion de contraste mas alta posible (21:1). En
+   pantallas OLED al maximo brillo se lee mejor que el gris sobre
+   blanco que teniamos antes.
+
+   El rojo sigue reservado: solo alertas criticas, nunca decorativo.
+   ============================================================= */
+
 :root {
-  --verde: #0b6e5e;
-  --verde-claro: #1e9e5a;
+  /* Superficies, de mas profunda a mas cercana */
+  --fondo: #000000;
+  --superficie: #0e0e0e;
+  --superficie-2: #1a1a1a;
+  --superficie-3: #262626;
+
+  /* Texto */
+  --texto: #ffffff;
+  --texto-2: #a3a3a3;
+  --texto-3: #6f6f6f;
+
+  /* Lineas */
+  --linea: #1f1f1f;
+  --linea-fuerte: #333333;
+
+  /* Accion principal: boton claro con texto oscuro */
+  --accion: #ffffff;
+  --accion-texto: #000000;
+
+  /* Identidad Moti. El verde sube de tono para el fondo oscuro. */
+  --verde: #14d19a;
+  --verde-fondo: #06251d;
   --ambar: #f2a33c;
+  --ambar-fondo: #2a1e0b;
+
+  /* Dinero en efectivo: el mismo verde billete de las apps de pago */
+  --efectivo: #3ecf6b;
+
+  /* Rojo reservado para alertas criticas */
   --alerta: #ff0000;
-  --fondo: #f5f7f6;
-  --texto: #101418;
-  --gris: #6b7280;
-  --borde: #dfe5e3;
-  --radio: 12px;
+  --alerta-texto: #ff8a8a;
+  --alerta-fondo: #2a0b0b;
+
+  --radio: 14px;
+  --radio-chico: 10px;
+
+  /* Alto de la barra inferior + zona segura del celular */
+  --nav-alto: 64px;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
 
+html,
 body {
   margin: 0;
-  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   background: var(--fondo);
+}
+
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   color: var(--texto);
   font-size: 16px;
-  line-height: 1.5;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
 }
 
-.app { max-width: 560px; margin: 0 auto; padding-bottom: 80px; }
+#root {
+  min-height: 100dvh;
+}
 
-header.barra {
-  background: var(--verde);
-  color: white;
-  padding: 14px 16px;
+.app {
+  max-width: 520px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  background: var(--fondo);
+  position: relative;
+}
+
+/* Espacio para que la barra inferior no tape el ultimo boton */
+.app.con-nav main {
+  padding-bottom: calc(var(--nav-alto) + env(safe-area-inset-bottom) + 24px);
+}
+
+main {
+  padding: 0 16px 32px;
+}
+
+/* -------------------------------------------------------------
+   CABECERA
+   Flecha de volver a la izquierda, titulo grande debajo. El
+   titulo no se aprieta en una barra de 44px: se le da aire.
+   ------------------------------------------------------------- */
+.cabecera {
   display: flex;
   align-items: center;
-  gap: 12px;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  gap: 14px;
+  padding: calc(env(safe-area-inset-top) + 10px) 16px 6px;
 }
-header.barra h1 { font-size: 18px; margin: 0; font-weight: 700; }
-header.barra a { color: white; text-decoration: none; font-size: 15px; }
 
-main { padding: 16px; }
+.cabecera .titulo {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
 
-.tarjeta {
-  background: white;
-  border: 1px solid var(--borde);
+.volver {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  flex: 0 0 44px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  color: var(--texto);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+}
+.volver:active {
+  background: var(--superficie-2);
+}
+
+/* Titulo grande de pantalla, tipo "Recibo" o "Planifica tu envio" */
+.titulo-grande {
+  font-size: 34px;
+  line-height: 1.12;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin: 10px 0 6px;
+}
+
+h2 {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0 0 4px;
+}
+
+h3 {
+  font-size: 17px;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.sub {
+  color: var(--texto-2);
+  font-size: 15px;
+  margin: 0 0 18px;
+}
+
+.apagado {
+  color: var(--texto-2);
+}
+
+.mini {
+  font-size: 13px;
+  color: var(--texto-3);
+}
+
+/* -------------------------------------------------------------
+   BLOQUES
+   ------------------------------------------------------------- */
+.bloque {
+  background: var(--superficie);
   border-radius: var(--radio);
   padding: 16px;
   margin-bottom: 12px;
 }
 
-h2 { font-size: 20px; margin: 0 0 4px; }
-h3 { font-size: 17px; margin: 0 0 8px; }
-.sub { color: var(--gris); font-size: 14px; margin: 0 0 16px; }
-
-label { display: block; font-size: 14px; font-weight: 600; margin: 14px 0 6px; }
-
-input, select, textarea {
-  width: 100%;
-  padding: 12px;
-  font-size: 16px;
-  border: 1px solid var(--borde);
-  border-radius: 10px;
-  background: white;
-  font-family: inherit;
+.bloque.plano {
+  background: transparent;
+  padding: 0;
 }
 
-/* Area tactil minima 48px: se usa con guantes de moto. */
-button {
-  min-height: 48px;
-  padding: 12px 18px;
-  font-size: 16px;
-  font-weight: 600;
+.separador {
+  height: 1px;
+  background: var(--linea);
+  margin: 16px 0;
   border: none;
-  border-radius: 10px;
-  background: var(--verde);
-  color: white;
-  cursor: pointer;
-  width: 100%;
-  font-family: inherit;
 }
-button:disabled { opacity: 0.45; cursor: not-allowed; }
-button.secundario { background: white; color: var(--verde); border: 1.5px solid var(--verde); }
-button.ambar { background: var(--ambar); color: #3a2600; }
-/* 48px minimo tambien en los botones chicos: se usan con guantes
-   de moto y con el barco en movimiento. */
-button.chico { width: auto; min-height: 48px; padding: 10px 14px; font-size: 15px; }
 
-.fila { display: flex; gap: 8px; align-items: center; }
-.fila > * { flex: 1; }
-.entre { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.entre {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
 
+.fila {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.fila > * {
+  flex: 1;
+}
+
+/* -------------------------------------------------------------
+   BUSCADOR DE LA PANTALLA DE INICIO
+   ------------------------------------------------------------- */
+.buscador {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  background: var(--superficie-2);
+  border: none;
+  border-radius: var(--radio);
+  padding: 16px;
+  min-height: 60px;
+  color: var(--texto);
+  font-size: 19px;
+  font-weight: 600;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  letter-spacing: -0.01em;
+}
+.buscador svg {
+  flex: 0 0 auto;
+  color: var(--texto-2);
+}
+
+/* Atajos circulares "Para ti" */
+.atajos {
+  display: flex;
+  gap: 10px;
+  margin: 6px 0 4px;
+}
+.atajo {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--texto);
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+}
+.atajo .circulo {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: var(--superficie-2);
+  display: grid;
+  place-items: center;
+  font-size: 30px;
+}
+.atajo:active .circulo {
+  background: var(--superficie-3);
+}
+.atajo .nombre {
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Fila de sugerencia con icono de reloj, como los destinos recientes */
+.sugerencia {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--linea);
+  padding: 14px 2px;
+  min-height: 60px;
+  color: var(--texto);
+  font-family: inherit;
+  font-size: 16px;
+  text-align: left;
+  cursor: pointer;
+}
+.sugerencia:last-child {
+  border-bottom: none;
+}
+.sugerencia .icono-redondo {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border-radius: 50%;
+  background: var(--superficie-2);
+  display: grid;
+  place-items: center;
+  color: var(--texto-2);
+}
+.sugerencia .cuerpo {
+  flex: 1;
+  min-width: 0;
+}
+/* Son <span> para poder ir dentro de un <button>: sin esto se
+   pegarian titulo y pie en la misma linea. */
+.sugerencia .cuerpo .titulo,
+.sugerencia .cuerpo .pie {
+  display: block;
+}
+.sugerencia .cuerpo .titulo {
+  font-weight: 500;
+}
+.sugerencia .cuerpo .pie {
+  color: var(--texto-2);
+  font-size: 14px;
+}
+.sugerencia .flecha {
+  color: var(--texto-3);
+  flex: 0 0 auto;
+}
+
+/* -------------------------------------------------------------
+   RUTA: punto de salida, linea, cuadro de destino
+   Es el mismo lenguaje visual que ya conocen del recibo de un
+   viaje: circulo arriba, cuadrado abajo, linea que los une.
+   ------------------------------------------------------------- */
+.ruta .tramo {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  column-gap: 14px;
+}
+
+.ruta .riel {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding-top: 7px;
+}
+/* La cuerda baja desde la marca hasta la marca de la fila siguiente */
+.ruta .riel::after {
+  content: '';
+  position: absolute;
+  top: 22px;
+  bottom: -4px;
+  width: 2px;
+  background: var(--linea-fuerte);
+}
+.ruta .riel.fin::after {
+  display: none;
+}
+
+.ruta .punto {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 3px solid var(--texto);
+  background: var(--fondo);
+  flex: 0 0 auto;
+}
+.ruta .punto.chico {
+  width: 10px;
+  height: 10px;
+  border-width: 2.5px;
+}
+.ruta .cuadro {
+  width: 13px;
+  height: 13px;
+  border: 3px solid var(--texto);
+  background: var(--fondo);
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+.ruta .parada {
+  min-width: 0;
+  padding-bottom: 20px;
+}
+.ruta .tramo:last-child .parada {
+  padding-bottom: 0;
+}
+.ruta .parada .hora {
+  font-size: 17px;
+  font-weight: 500;
+}
+.ruta .parada .lugar {
+  color: var(--texto-2);
+  font-size: 15px;
+}
+
+/* Variante compacta para tarjetas de lista */
+.ruta.compacta .parada {
+  padding-bottom: 12px;
+}
+.ruta.compacta .parada .hora {
+  font-size: 15px;
+}
+.ruta.compacta .parada .lugar {
+  font-size: 14px;
+}
+
+/* -------------------------------------------------------------
+   OPCIONES SELECCIONABLES (elegir barco, elegir muelle)
+   Icono a la izquierda, precio a la derecha, borde blanco cuando
+   esta escogida. Sin colores de relleno: el borde ya lo dice todo.
+   ------------------------------------------------------------- */
+.opcion {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: var(--radio);
+  padding: 12px 14px;
+  margin-bottom: 4px;
+  min-height: 76px;
+  color: var(--texto);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.opcion.activa {
+  border-color: var(--texto);
+}
+.opcion .figura {
+  width: 48px;
+  flex: 0 0 48px;
+  font-size: 30px;
+  text-align: center;
+  line-height: 1;
+}
+.opcion .cuerpo {
+  flex: 1;
+  min-width: 0;
+}
+.opcion .cuerpo .nombre,
+.opcion .cuerpo .detalle,
+.opcion .cuerpo .nota {
+  display: block;
+}
+.opcion .cuerpo .nombre {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.opcion .cuerpo .detalle {
+  font-size: 14px;
+  color: var(--texto-2);
+}
+.opcion .cuerpo .nota {
+  font-size: 13px;
+  color: var(--texto-3);
+}
+.opcion .precio {
+  font-size: 17px;
+  font-weight: 600;
+  flex: 0 0 auto;
+  text-align: right;
+}
+
+/* Contador de piezas: menos / cantidad / mas */
 .pieza {
   display: flex;
   align-items: center;
   gap: 12px;
-  border: 1px solid var(--borde);
-  border-radius: 10px;
-  padding: 10px 12px;
-  margin-bottom: 8px;
-  background: white;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--linea);
 }
-.pieza .info { flex: 1; }
-.pieza .nombre { font-weight: 600; font-size: 15px; }
-.pieza .ej { color: var(--gris); font-size: 13px; }
-.pieza .contador { display: flex; align-items: center; gap: 8px; }
-.pieza .contador button { width: 48px; min-height: 48px; padding: 0; font-size: 22px; }
-.pieza .contador span { min-width: 26px; text-align: center; font-weight: 700; }
+.pieza:last-of-type {
+  border-bottom: none;
+}
+.pieza .figura {
+  font-size: 30px;
+  width: 46px;
+  flex: 0 0 46px;
+  text-align: center;
+}
+.pieza .cuerpo {
+  flex: 1;
+  min-width: 0;
+}
+.pieza .cuerpo .nombre {
+  font-weight: 600;
+  font-size: 16px;
+}
+.pieza .cuerpo .ej {
+  color: var(--texto-2);
+  font-size: 13px;
+}
+.contador {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+.contador button {
+  width: 48px;
+  height: 48px;
+  min-height: 48px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--superficie-2);
+  color: var(--texto);
+  font-size: 24px;
+  font-weight: 400;
+  border: none;
+  display: grid;
+  place-items: center;
+}
+.contador button:disabled {
+  opacity: 0.3;
+}
+.contador .valor {
+  min-width: 28px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 17px;
+}
 
+/* -------------------------------------------------------------
+   PAGO
+   ------------------------------------------------------------- */
+.pago-fila {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--linea);
+  padding: 14px 2px;
+  min-height: 64px;
+  color: var(--texto);
+  font-family: inherit;
+  font-size: 16px;
+  text-align: left;
+  cursor: pointer;
+}
+.billete {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border-radius: 9px;
+  background: var(--efectivo);
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+}
+.pago-fila .etiqueta-pago {
+  flex: 1;
+}
+.pago-fila .flecha {
+  color: var(--texto-3);
+}
+
+/* -------------------------------------------------------------
+   BOTONES
+   Area tactil minima 48px: se usan con guantes y con el barco
+   en movimiento.
+   ------------------------------------------------------------- */
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.cta,
+button.principal {
+  display: block;
+  width: 100%;
+  min-height: 56px;
+  padding: 14px 18px;
+  border: none;
+  border-radius: var(--radio-chico);
+  background: var(--accion);
+  color: var(--accion-texto);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-family: inherit;
+}
+.cta:disabled,
+button.principal:disabled {
+  background: var(--superficie-3);
+  color: var(--texto-3);
+  cursor: not-allowed;
+}
+
+button.secundario {
+  display: block;
+  width: 100%;
+  min-height: 52px;
+  padding: 13px 18px;
+  border: 1px solid var(--linea-fuerte);
+  border-radius: var(--radio-chico);
+  background: transparent;
+  color: var(--texto);
+  font-size: 16px;
+  font-weight: 600;
+}
+button.secundario:disabled {
+  opacity: 0.4;
+}
+
+button.chico {
+  width: auto;
+  min-height: 48px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--linea-fuerte);
+  background: transparent;
+  color: var(--texto);
+  font-size: 15px;
+  font-weight: 600;
+}
+button.chico.claro {
+  background: var(--accion);
+  color: var(--accion-texto);
+  border-color: var(--accion);
+}
+button.chico.ambar {
+  background: var(--ambar);
+  color: #241700;
+  border-color: var(--ambar);
+}
+
+button.texto {
+  width: auto;
+  min-height: 48px;
+  background: none;
+  border: none;
+  color: var(--texto);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: underline;
+  padding: 0 4px;
+}
+
+/* Barra fija de accion al pie de las pantallas de flujo */
+.pie-accion {
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(to top, var(--fondo) 68%, transparent);
+  padding: 18px 0 calc(env(safe-area-inset-bottom) + 8px);
+  margin-top: 8px;
+}
+
+/* -------------------------------------------------------------
+   FORMULARIOS
+   16px minimo: por debajo, el navegador del celular hace zoom solo.
+   ------------------------------------------------------------- */
+label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--texto-2);
+  margin: 18px 0 8px;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 15px 14px;
+  font-size: 16px;
+  color: var(--texto);
+  background: var(--superficie-2);
+  border: 1px solid transparent;
+  border-radius: var(--radio-chico);
+  font-family: inherit;
+  min-height: 54px;
+}
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--linea-fuerte);
+}
+input::placeholder {
+  color: var(--texto-3);
+}
+select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--texto-2) 50%),
+    linear-gradient(135deg, var(--texto-2) 50%, transparent 50%);
+  background-position: calc(100% - 20px) 24px, calc(100% - 14px) 24px;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+.casilla {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+  min-height: 48px;
+  font-size: 16px;
+  color: var(--texto);
+  font-weight: 400;
+}
+.casilla input[type='checkbox'] {
+  width: 24px;
+  height: 24px;
+  min-height: 24px;
+  flex: 0 0 24px;
+  accent-color: var(--verde);
+  padding: 0;
+}
+
+/* Selector segmentado, como el de perfil personal / empresa */
+.segmentos {
+  display: flex;
+  background: var(--superficie-2);
+  border-radius: 12px;
+  padding: 4px;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.segmentos button {
+  flex: 1;
+  min-height: 48px;
+  border: 2px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--texto-2);
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 10px 8px;
+}
+.segmentos button.activo {
+  border-color: var(--texto);
+  color: var(--texto);
+}
+
+/* -------------------------------------------------------------
+   RECIBO / DESGLOSE DE PRECIO
+   ------------------------------------------------------------- */
+.total-grande {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin: 10px 0 18px;
+}
+.total-grande .rotulo {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.total-grande .cifra {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.desglose {
+  display: flex;
+  flex-direction: column;
+}
+.desglose > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--linea);
+  font-size: 16px;
+}
+.desglose > div:last-child {
+  border-bottom: none;
+}
+.desglose .clave {
+  color: var(--texto-2);
+}
+.desglose .valor {
+  font-weight: 500;
+  text-align: right;
+}
+.desglose .valor.fuerte {
+  font-weight: 700;
+}
+
+/* Tarjeta del operador independiente que lleva la carga */
+.operador {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid var(--linea-fuerte);
+  border-radius: var(--radio);
+  padding: 18px;
+  margin: 14px 0;
+  font-size: 17px;
+}
+.operador .icono {
+  flex: 0 0 auto;
+  color: var(--texto-2);
+}
+.operador .cuerpo {
+  flex: 1;
+  min-width: 0;
+}
+.operador .cuerpo .nombre {
+  display: block;
+  font-weight: 600;
+}
+.operador .cuerpo .papel {
+  color: var(--texto-2);
+  font-size: 14px;
+}
+
+/* -------------------------------------------------------------
+   ETIQUETAS DE ESTADO
+   ------------------------------------------------------------- */
 .etiqueta {
   display: inline-block;
-  padding: 3px 10px;
+  padding: 5px 11px;
   border-radius: 999px;
   font-size: 13px;
   font-weight: 600;
+  white-space: nowrap;
 }
-.etiqueta.verde { background: #e3f4ec; color: #0b6e5e; }
-.etiqueta.ambar { background: #fdf0dc; color: #8a5a12; }
-.etiqueta.gris { background: #eef0ef; color: #4b5563; }
-/* El rojo puro sobre rosado no se lee bajo el sol del muelle.
-   Se oscurece el texto y se le pone borde para que salte a la vista. */
-.etiqueta.roja { background: #ffe5e5; color: #a30000; border: 1.5px solid var(--alerta); }
-
-.token {
-  font-size: 44px;
-  font-weight: 800;
-  letter-spacing: 8px;
-  text-align: center;
+.etiqueta.verde {
+  background: var(--verde-fondo);
   color: var(--verde);
-  margin: 8px 0;
+}
+.etiqueta.ambar {
+  background: var(--ambar-fondo);
+  color: var(--ambar);
+}
+.etiqueta.gris {
+  background: var(--superficie-2);
+  color: var(--texto-2);
+}
+/* El rojo solo aparece cuando hay plata de por medio o algo se rompio */
+.etiqueta.roja {
+  background: var(--alerta-fondo);
+  color: var(--alerta-texto);
+  border: 1.5px solid var(--alerta);
 }
 
+/* -------------------------------------------------------------
+   AVISOS
+   ------------------------------------------------------------- */
+.aviso {
+  background: var(--superficie-2);
+  border-left: 3px solid var(--ambar);
+  padding: 14px;
+  border-radius: var(--radio-chico);
+  font-size: 14.5px;
+  color: var(--texto-2);
+  margin: 14px 0;
+}
+.aviso strong {
+  color: var(--texto);
+}
+.aviso.critico {
+  background: var(--alerta-fondo);
+  border-left-color: var(--alerta);
+  color: var(--alerta-texto);
+}
+.aviso.critico strong {
+  color: var(--alerta-texto);
+}
+
+/* Codigo publico del envio, para leerlo en voz alta por telefono */
 .codigo {
   font-family: ui-monospace, Menlo, monospace;
-  font-size: 20px;
+  font-size: 26px;
   font-weight: 700;
-  letter-spacing: 2px;
-  background: var(--fondo);
-  padding: 10px;
-  border-radius: 8px;
+  letter-spacing: 4px;
+  background: var(--superficie-2);
+  padding: 16px;
+  border-radius: var(--radio-chico);
   text-align: center;
 }
 
-.aviso {
-  background: #fdf0dc;
-  border-left: 4px solid var(--ambar);
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  margin: 12px 0;
+/* Token de retiro de 4 digitos */
+.token {
+  font-size: 52px;
+  font-weight: 800;
+  letter-spacing: 10px;
+  text-align: center;
+  color: var(--verde);
+  margin: 10px 0 4px;
 }
-.aviso.critico { background: #ffe5e5; border-left-color: var(--alerta); }
 
-.linea { border-top: 1px solid var(--borde); margin: 14px 0; }
-.total { font-size: 22px; font-weight: 800; color: var(--verde); }
-.desglose { font-size: 14px; }
-.desglose div { display: flex; justify-content: space-between; padding: 3px 0; }
-
-.evento { border-left: 2px solid var(--borde); padding: 0 0 14px 14px; position: relative; }
-.evento::before {
-  content: '';
-  position: absolute;
-  left: -5px;
-  top: 5px;
-  width: 8px;
-  height: 8px;
+/* -------------------------------------------------------------
+   BITACORA DEL RECORRIDO
+   ------------------------------------------------------------- */
+.evento {
+  display: flex;
+  gap: 14px;
+  padding-bottom: 20px;
+}
+.evento .rieles {
+  width: 14px;
+  flex: 0 0 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.evento .marca {
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  background: var(--verde);
+  background: var(--texto-3);
+  margin-top: 6px;
+  flex: 0 0 auto;
 }
-.evento .cuando { color: var(--gris); font-size: 13px; }
+/* El evento mas reciente va en verde: es el que importa de un vistazo */
+.evento.ultimo .marca {
+  background: var(--verde);
+  box-shadow: 0 0 0 4px var(--verde-fondo);
+}
+.evento .cuerda {
+  width: 2px;
+  flex: 1;
+  background: var(--linea);
+  margin-top: 4px;
+}
+.evento:last-child {
+  padding-bottom: 0;
+}
+.evento:last-child .cuerda {
+  display: none;
+}
+.evento .cuerpo {
+  flex: 1;
+  min-width: 0;
+}
+.evento .cuando {
+  color: var(--texto-3);
+  font-size: 13px;
+  margin-top: 2px;
+}
 
-a { color: var(--verde); }
-.vacio { text-align: center; color: var(--gris); padding: 30px 10px; }
+/* -------------------------------------------------------------
+   BARRA INFERIOR
+   ------------------------------------------------------------- */
+.nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  background: var(--fondo);
+  border-top: 1px solid var(--linea);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.nav .interior {
+  max-width: 520px;
+  margin: 0 auto;
+  display: flex;
+  height: var(--nav-alto);
+}
+.nav a {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  text-decoration: none;
+  color: var(--texto-3);
+  font-size: 11px;
+  font-weight: 500;
+  min-height: 48px;
+}
+.nav a.activo {
+  color: var(--texto);
+}
+
+/* -------------------------------------------------------------
+   ESTADOS DE PANTALLA
+   ------------------------------------------------------------- */
+.vacio {
+  text-align: center;
+  color: var(--texto-2);
+  padding: 48px 16px;
+  font-size: 15px;
+}
+
+.cargando {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 56px 16px;
+  color: var(--texto-2);
+  font-size: 15px;
+}
+.girador {
+  width: 26px;
+  height: 26px;
+  border: 2.5px solid var(--linea-fuerte);
+  border-top-color: var(--texto);
+  border-radius: 50%;
+  animation: girar 0.8s linear infinite;
+}
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .girador {
+    animation-duration: 2.4s;
+  }
+}
+
+a {
+  color: var(--texto);
+}
+
+.enlace-limpio {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}

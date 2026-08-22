@@ -93,8 +93,25 @@ docs/FASE-0.md          Que hacer antes de programar mas
 
 ## Diseno
 
-Verde `#0B6E5E` principal · Ambar `#F2A33C` secundario · Rojo `#FF0000`
-**reservado exclusivamente para alertas criticas**, nunca decorativo.
+**Interfaz oscura de alto contraste**, con el lenguaje visual de las apps de
+movilidad que la gente del nodo ya tiene instaladas. La ventaja no es
+estetica: es que el capitan y el comerciante no tienen que aprender una
+gramatica nueva.
+
+- Fondo `#000000`, superficies `#0E0E0E` y `#1A1A1A`, texto `#FFFFFF`.
+- Accion principal: **boton blanco con texto negro**, ancho completo, al pie.
+- Seleccion: **borde blanco de 2 px**. Nunca relleno de color.
+- Verde `#14D19A` para identidad y estados buenos. Ambar `#F2A33C` para avisos.
+- Rojo `#FF0000` **reservado exclusivamente para alertas criticas**
+  (por cobrar, fallo de operacion), nunca decorativo.
+
+Piezas reutilizables: `.buscador`, `.atajo`, `.sugerencia`, `.opcion`,
+`.pago-fila`, `.cta`, `.desglose`, `.total-grande`, `.operador`, `.evento`,
+mas los componentes `Ruta`, `Cabecera`, `NavInferior` e `Iconos`.
+
+Sobre el sol del muelle: negro puro con blanco puro da 21:1 de contraste, la
+relacion mas alta posible. En pantallas OLED al maximo brillo se lee mejor
+que el gris sobre blanco que habia antes.
 
 Area tactil minima 48x48 px. Texto de formularios 16 px o mas. Siempre los
 tres estados: cargando, vacio y error.

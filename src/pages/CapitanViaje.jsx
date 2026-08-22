@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase.js'
 import { consultar } from '../lib/red.js'
-import { fecha, pesos, ESTADOS_ENVIO } from '../lib/carga.js'
+import { fecha, pesos, ESTADOS_ENVIO, TIPOS_CAJA } from '../lib/carga.js'
 import { Cargando, ErrorRed, Vacio } from '../components/Estado.jsx'
+import Cabecera from '../components/Cabecera.jsx'
 
 const COLUMNAS_ENVIO =
   'id, viaje_id, parada_id, destinatario_nombre, kg_cobrables, fragil, pago, valor, estado, ' +
@@ -20,6 +21,7 @@ const COLUMNAS_ENVIO =
  */
 export default function CapitanViaje() {
   const { id } = useParams()
+  const navegar = useNavigate()
   const [viaje, setViaje] = useState(null)
   const [paradas, setParadas] = useState([])
   const [envios, setEnvios] = useState([])
@@ -56,9 +58,7 @@ export default function CapitanViaje() {
     }
     setParadas(r2.data ?? [])
 
-    const r3 = await consultar(
-      supabase.from('envios').select(COLUMNAS_ENVIO).eq('viaje_id', id)
-    )
+    const r3 = await consultar(supabase.from('envios').select(COLUMNAS_ENVIO).eq('viaje_id', id))
     if (r3.error) {
       setCargando(false)
       return setError(r3.error)
@@ -70,15 +70,6 @@ export default function CapitanViaje() {
   useEffect(() => {
     cargar()
   }, [cargar])
-
-  if (error) return <ErrorRed mensaje={error} onReintentar={cargar} />
-  if (cargando && !viaje) return <Cargando />
-  if (!viaje) return <Vacio>No se encontro este viaje.</Vacio>
-
-  const cargados = envios
-    .filter((e) => e.estado !== 'cancelado')
-    .reduce((t, e) => t + Number(e.kg_cobrables), 0)
-  const disponible = Number(viaje.aforo_kg) - cargados
 
   // ---------------------------------------------------------------
   // ZARPE
@@ -117,7 +108,7 @@ export default function CapitanViaje() {
             envio_id: e.id,
             viaje_id: id,
             tipo: 'zarpe',
-            mensaje: `La embarcacion ${viaje.embarcaciones?.nombre} zarpo de ${viaje.origen}.`,
+            mensaje: `La embarcación ${viaje.embarcaciones?.nombre} zarpó de ${viaje.origen}.`,
           }))
         )
       )
@@ -141,7 +132,7 @@ export default function CapitanViaje() {
       })
     }
 
-    setMensaje('Viaje marcado como en navegacion. Los clientes ya lo ven.')
+    setMensaje('Viaje marcado como en navegación. Los clientes ya lo ven.')
     cargar()
   }
 
@@ -164,7 +155,10 @@ export default function CapitanViaje() {
         supabase
           .from('envios')
           .update({ estado: 'en_muelle' })
-          .in('id', deEste.map((e) => e.id))
+          .in(
+            'id',
+            deEste.map((e) => e.id)
+          )
       )
       if (r.error) {
         setOcupado(false)
@@ -182,7 +176,7 @@ export default function CapitanViaje() {
             envio_id: e.id,
             viaje_id: id,
             tipo: 'llegada',
-            mensaje: `El barco esta descargando en ${parada.muelle} en este momento. Acerquese con su codigo de retiro.`,
+            mensaje: `El barco está descargando en ${parada.muelle} en este momento. Acérquese con su código de retiro.`,
           }))
         )
       )
@@ -202,7 +196,7 @@ export default function CapitanViaje() {
             envio_id: e.id,
             viaje_id: id,
             tipo: 'proximidad',
-            mensaje: `El barco llego a ${parada.muelle}. Su muelle (${siguiente.muelle}) es el siguiente de la ruta.`,
+            mensaje: `El barco llegó a ${parada.muelle}. Su muelle (${siguiente.muelle}) es el siguiente de la ruta.`,
           }))
         )
       )
@@ -229,7 +223,7 @@ export default function CapitanViaje() {
       })
     }
 
-    setMensaje(`Llegada a ${parada.muelle} registrada. Se aviso a los clientes.`)
+    setMensaje(`Llegada a ${parada.muelle} registrada. Se avisó a los clientes.`)
     cargar()
   }
 
@@ -252,30 +246,72 @@ export default function CapitanViaje() {
     cargar()
   }
 
+  if (error)
+    return (
+      <>
+        <Cabecera atras={() => navegar('/viajes')} />
+        <main>
+          <ErrorRed mensaje={error} onReintentar={cargar} />
+        </main>
+      </>
+    )
+
+  if (cargando && !viaje)
+    return (
+      <>
+        <Cabecera atras={() => navegar('/viajes')} />
+        <Cargando />
+      </>
+    )
+
+  if (!viaje)
+    return (
+      <>
+        <Cabecera atras={() => navegar('/viajes')} />
+        <main>
+          <Vacio>No se encontró este viaje.</Vacio>
+        </main>
+      </>
+    )
+
+  const cargados = envios
+    .filter((e) => e.estado !== 'cancelado')
+    .reduce((t, e) => t + Number(e.kg_cobrables), 0)
+  const disponible = Number(viaje.aforo_kg) - cargados
+
   return (
     <>
-      <div className="tarjeta">
-        <h2>{viaje.embarcaciones?.nombre}</h2>
-        <p className="sub">
-          Sale {fecha(viaje.fecha_salida)} · {viaje.estado.replace('_', ' ')}
-        </p>
+      <Cabecera atras={() => navegar('/viajes')} titulo="Manifiesto" />
+      <main>
+        <div className="entre" style={{ marginTop: 6 }}>
+          <span className="mini">Sale {fecha(viaje.fecha_salida)}</span>
+          <span className={'etiqueta ' + (viaje.estado === 'en_navegacion' ? 'verde' : 'gris')}>
+            {viaje.estado.replace('_', ' ')}
+          </span>
+        </div>
+
+        <h2 className="titulo-grande">{viaje.embarcaciones?.nombre}</h2>
+
         <div className="desglose">
           <div>
-            <span>Carga reservada</span>
-            <strong>{cargados} kg</strong>
+            <span className="clave">Carga reservada</span>
+            <span className="valor">{cargados} kg</span>
           </div>
           <div>
-            <span>Cupo disponible</span>
-            <strong style={{ color: disponible <= 0 ? 'var(--alerta)' : 'inherit' }}>
+            <span className="clave">Cupo disponible</span>
+            <span
+              className="valor fuerte"
+              style={{ color: disponible <= 0 ? 'var(--alerta-texto)' : 'inherit' }}
+            >
               {disponible} kg
-            </strong>
+            </span>
           </div>
         </div>
 
         {viaje.estado === 'programado' && (
           <>
-            <div style={{ height: 12 }} />
-            <button onClick={() => zarpar()} disabled={ocupado}>
+            <div style={{ height: 18 }} />
+            <button className="cta" onClick={() => zarpar()} disabled={ocupado}>
               {ocupado ? 'Enviando…' : 'Marcar como zarpado'}
             </button>
           </>
@@ -285,26 +321,25 @@ export default function CapitanViaje() {
         {fallo && (
           <div className="aviso critico">
             {fallo.texto}
-            <div style={{ height: 8 }} />
-            <button onClick={fallo.reintentar} disabled={ocupado}>
+            <div style={{ height: 10 }} />
+            <button className="chico" onClick={fallo.reintentar} disabled={ocupado}>
               Reintentar
             </button>
           </div>
         )}
-      </div>
 
-      <div className="tarjeta">
+        <div style={{ height: 28 }} />
         <h3>Ruta</h3>
         {paradas.map((p) => {
           const cuantos = envios.filter((e) => e.parada_id === p.id).length
           return (
             <div key={p.id} className="pieza">
-              <div className="info">
+              <div className="cuerpo">
                 <div className="nombre">
                   {p.orden}. {p.muelle}
                 </div>
                 <div className="ej">
-                  {cuantos} envio(s) · {p.estado}
+                  {cuantos} envío{cuantos === 1 ? '' : 's'} · {p.estado}
                 </div>
               </div>
               {viaje.estado === 'en_navegacion' && p.estado === 'pendiente' && (
@@ -314,12 +349,12 @@ export default function CapitanViaje() {
                   disabled={ocupado}
                   onClick={() => llegarA(p)}
                 >
-                  Llegue
+                  Llegué
                 </button>
               )}
               {p.estado === 'descargando' && (
                 <button
-                  className="chico secundario"
+                  className="chico"
                   style={{ flex: '0 0 auto' }}
                   disabled={ocupado}
                   onClick={() => completarParada(p)}
@@ -330,19 +365,22 @@ export default function CapitanViaje() {
             </div>
           )
         })}
-      </div>
 
-      <div className="tarjeta">
-        <h3>Manifiesto ({envios.length})</h3>
-        <p className="sub">Ordenado por muelle de la ruta.</p>
-        {!envios.length && <Vacio>Sin carga reservada todavia.</Vacio>}
+        <div style={{ height: 28 }} />
+        <h3>Carga a bordo ({envios.length})</h3>
+        <p className="mini" style={{ marginBottom: 14 }}>
+          Ordenada por muelle de la ruta.
+        </p>
+
+        {!envios.length && <Vacio>Sin carga reservada todavía.</Vacio>}
+
         {envios
           .slice()
           .sort((a, b) => (a.paradas?.orden ?? 0) - (b.paradas?.orden ?? 0))
           .map((e) => (
             <FilaEnvio key={e.id} envio={e} onCambio={cargar} />
           ))}
-      </div>
+      </main>
     </>
   )
 }
@@ -377,58 +415,73 @@ function FilaEnvio({ envio, onCambio }) {
   const est = ESTADOS_ENVIO[envio.estado] ?? { texto: envio.estado, color: 'gris' }
 
   return (
-    <div className="tarjeta" style={{ marginBottom: 10 }}>
+    <div className="bloque">
       <div className="entre">
-        <strong>{envio.destinatario_nombre}</strong>
+        <strong style={{ fontSize: 17 }}>{envio.destinatario_nombre}</strong>
         <span className={'etiqueta ' + est.color}>{est.texto}</span>
       </div>
-      <div className="sub" style={{ margin: '4px 0' }}>
+      <div className="mini" style={{ marginTop: 4 }}>
         {envio.paradas?.muelle} · {envio.kg_cobrables} kg cobrables
-        {envio.fragil && ' · FRAGIL'}
       </div>
 
+      <div style={{ height: 12 }} />
       <div className="desglose">
         {envio.envio_items?.map((i) => (
           <div key={i.id}>
-            <span>{i.tipo_caja}</span>
-            <span>x {i.cantidad}</span>
+            <span className="clave">
+              {TIPOS_CAJA.find((t) => t.id === i.tipo_caja)?.etiqueta ?? i.tipo_caja}
+            </span>
+            <span className="valor">× {i.cantidad}</span>
           </div>
         ))}
       </div>
 
-      {envio.fragil && <div className="aviso">Carga fragil: acomodar encima, nunca debajo.</div>}
+      {envio.fragil && (
+        <div className="aviso">
+          <strong>Carga frágil:</strong> acomodar encima, nunca debajo.
+        </div>
+      )}
 
-      <div className="linea" />
+      <hr className="separador" />
       <div className="entre">
-        <span>{pesos(envio.valor)}</span>
+        <span style={{ fontSize: 18, fontWeight: 700 }}>{pesos(envio.valor)}</span>
         {envio.pago === 'destino' ? (
-          <span className="etiqueta roja">POR COBRAR EN DESTINO</span>
+          <span className="etiqueta roja">POR COBRAR</span>
         ) : (
-          <span className="etiqueta verde">PAGADO EN ORIGEN</span>
+          <span className="etiqueta verde">YA PAGADO</span>
         )}
       </div>
 
       {envio.estado !== 'entregado' && envio.estado !== 'cancelado' && (
         <>
-          <div style={{ height: 10 }} />
+          <div style={{ height: 14 }} />
           {!abierto ? (
             <button className="secundario" onClick={() => setAbierto(true)}>
-              Entregar mercancia
+              Entregar mercancía
             </button>
           ) : (
             <>
-              <label>Codigo de retiro que le dicta el destinatario</label>
+              <label>Código de retiro que le dicta quien recibe</label>
               <input
                 inputMode="numeric"
                 maxLength={4}
                 value={codigo}
-                onChange={(e) => setCodigo(e.target.value)}
-                placeholder="4 digitos"
+                onChange={(e) => setCodigo(e.target.value.replace(/\D/g, ''))}
+                placeholder="4 dígitos"
+                style={{ letterSpacing: 8, fontWeight: 700, fontSize: 20, textAlign: 'center' }}
               />
               {error && <div className="aviso critico">{error}</div>}
-              <div style={{ height: 10 }} />
-              <button onClick={entregar} disabled={verificando || codigo.trim().length !== 4}>
+              <div style={{ height: 12 }} />
+              <button
+                className="cta"
+                onClick={entregar}
+                disabled={verificando || codigo.trim().length !== 4}
+              >
                 {verificando ? 'Verificando…' : 'Confirmar entrega'}
+              </button>
+              <div style={{ height: 8 }} />
+              <button className="secundario" onClick={() => setAbierto(false)}>
+                Cancelar
               </button>
             </>
           )}
