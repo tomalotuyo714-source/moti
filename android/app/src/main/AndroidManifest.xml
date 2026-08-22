@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:usesCleartextTraffic="false"
+        android:theme="@style/AppTheme">
+
+        <activity
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
+            android:name=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:theme="@style/AppTheme.NoActionBarLaunch"
+            android:launchMode="singleTask"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!--
+                Enlaces de rastreo.
+
+                El remitente comparte por WhatsApp un enlace del sitio.
+                Si quien recibe tiene la app instalada, se abre en la
+                app; si no, se abre en el navegador y funciona igual.
+                Es la misma direccion en los dos casos: nunca hay que
+                explicarle a nadie cual enlace usar.
+
+                Requiere el archivo de verificacion publicado en
+                https://moti-zeta.vercel.app/.well-known/assetlinks.json
+            -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="moti-zeta.vercel.app"
+                    android:pathPrefix="/rastreo" />
+            </intent-filter>
+        </activity>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths"></meta-data>
+        </provider>
+
+        <!-- Icono y color de las notificaciones de llegada al muelle -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_stat_moti" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/moti_verde" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="moti_envios" />
+    </application>
+
+    <!-- ============================================================
+         PERMISOS
+
+         Cada uno esta aqui por una funcion concreta de la app. No
+         se pide nada "por si acaso": Play obliga a justificar cada
+         permiso y un permiso de mas es una razon de rechazo.
+         ============================================================ -->
+
+    <!-- Hablar con la base de datos -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Avisar que el barco llego al muelle (Android 13 en adelante) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Foto de la entrega -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- Ubicacion del muelle al marcar la llegada. Solo mientras la
+         app esta abierta: nunca en segundo plano. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!-- La camara es opcional: un celular sin camara puede instalar
+         la app igual y entregar sin foto. -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
+</manifest>

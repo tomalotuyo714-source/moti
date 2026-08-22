@@ -1,0 +1,136 @@
+# =============================================================
+# Compila la app de Android.
+#
+# Por que en CI y no en el computador: el contenedor donde trabaja
+# el agente no alcanza los repositorios de Google ni Maven, y el
+# equipo de Neo tendria que bajarse Android Studio entero (varios
+# giga). GitHub Actions es gratis mientras el repositorio sea
+# publico, y sus maquinas ya traen el SDK de Android instalado.
+#
+# Salidas:
+#   moti-aab    -> el que se sube a Play Console
+#   moti-apk    -> para instalar directo en un celular y probar
+#
+# Secretos que hay que crear en Settings -> Secrets and variables
+# -> Actions (los cuatro de firma solo cuando exista el llavero):
+#   VITE_SUPABASE_URL
+#   VITE_SUPABASE_ANON_KEY
+#   MOTI_KEYSTORE_BASE64      el .jks convertido a base64
+#   MOTI_KEYSTORE_PASSWORD
+#   MOTI_KEY_ALIAS
+#   MOTI_KEY_PASSWORD
+#
+# Sin los de firma el AAB sale sin firmar: sirve para revisar que
+# compila, pero Play no lo recibe.
+# =============================================================
+name: Android
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - 'tienda/**'
+      - '**/*.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compilar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Cache de Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Dependencias
+        run: npm ci
+
+      - name: Compilar la web
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$VITE_SUPABASE_URL" ]; then
+            echo "::error::Falta el secreto VITE_SUPABASE_URL. Sin el, la app sale con la pantalla de 'falta conectar la base de datos'."
+            exit 1
+          fi
+          npm run build
+
+      - name: Pasar la web al proyecto Android
+        run: npx cap sync android
+
+      - name: Preparar la firma de subida
+        id: firma
+        env:
+          LLAVERO: ${{ secrets.MOTI_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$LLAVERO" ]; then
+            echo "$LLAVERO" | base64 -d > "$RUNNER_TEMP/moti.jks"
+            echo "hay=si" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::No hay llavero configurado. El AAB va a salir SIN FIRMAR y Play no lo va a recibir."
+            echo "hay=no" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Compilar AAB y APK
+        working-directory: android
+        env:
+          MOTI_KEYSTORE_FILE: ${{ steps.firma.outputs.hay == 'si' && format('{0}/moti.jks', runner.temp) || '' }}
+          MOTI_KEYSTORE_PASSWORD: ${{ secrets.MOTI_KEYSTORE_PASSWORD }}
+          MOTI_KEY_ALIAS: ${{ secrets.MOTI_KEY_ALIAS }}
+          MOTI_KEY_PASSWORD: ${{ secrets.MOTI_KEY_PASSWORD }}
+          # Play exige que cada subida traiga un numero mayor que la
+          # anterior. El numero de corrida siempre sube.
+          MOTI_VERSION_CODE: ${{ github.run_number }}
+          MOTI_VERSION_NAME: 1.0.${{ github.run_number }}
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon bundleRelease assembleDebug
+
+      - name: Guardar el AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: moti-aab
+          path: android/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Guardar el APK de prueba
+        uses: actions/upload-artifact@v4
+        with:
+          name: moti-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Resumen
+        run: |
+          {
+            echo "## Moti — compilación de Android"
+            echo ""
+            echo "| Dato | Valor |"
+            echo "|---|---|"
+            echo "| versionCode | ${{ github.run_number }} |"
+            echo "| versionName | 1.0.${{ github.run_number }} |"
+            echo "| Firmado | ${{ steps.firma.outputs.hay == 'si' && 'sí' || 'NO — Play lo va a rechazar' }} |"
+            echo ""
+            echo "Descargue **moti-aab** y súbalo en Play Console."
+            echo "**moti-apk** se instala directo en un celular para probar."
+          } >> "$GITHUB_STEP_SUMMARY"

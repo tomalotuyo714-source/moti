@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Fondo del icono adaptativo. Negro, como la app. -->
+    <color name="ic_launcher_background">#000000</color>
+    <!-- Verde de identidad, para el tinte de las notificaciones -->
+    <color name="moti_verde">#14D19A</color>
+    <color name="colorPrimary">#000000</color>
+    <color name="colorPrimaryDark">#000000</color>
+    <color name="colorAccent">#14D19A</color>
+</resources>

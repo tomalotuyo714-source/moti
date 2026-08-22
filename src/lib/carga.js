@@ -83,6 +83,8 @@ export function pesos(valor) {
 
 export function fecha(iso) {
   if (!iso) return '-'
+  // Acepta tanto ISO como milisegundos: las copias sin senal se
+  // guardan con Date.now().
   return new Date(iso).toLocaleString('es-CO', {
     weekday: 'short',
     day: '2-digit',

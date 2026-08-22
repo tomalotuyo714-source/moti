@@ -6,9 +6,25 @@ dist
 *.log
 .DS_Store
 .vite
-
-# basura local que no va a github
 _to_delete/
-_node_modules.tgz
-_cambios.tgz
-arrancar.bat
+
+# ---------------------------------------------------------------
+# LLAVES DE FIRMA
+#
+# El llavero de subida NUNCA va al repositorio. Si se pierde el
+# control de ese archivo, cualquiera puede publicar una version
+# falsa de Moti con el mismo nombre de paquete.
+# ---------------------------------------------------------------
+*.jks
+*.keystore
+key.properties
+android/app/google-services.json
+ios/App/App/GoogleService-Info.plist
+
+# Compilados nativos
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+ios/App/Pods/
+ios/App/build/

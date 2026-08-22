@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { supabase, faltaConfiguracion } from './lib/supabase.js'
 import { conLimite, mensajeError, consultar } from './lib/red.js'
+import { prepararApp, alCambiarRed, hayRed } from './lib/nativo.js'
+import { iniciarAvisos } from './lib/avisos.js'
 import { Cargando, ErrorRed } from './components/Estado.jsx'
 import SinConfigurar from './components/SinConfigurar.jsx'
 import NavInferior from './components/NavInferior.jsx'
@@ -25,7 +27,30 @@ export default function App() {
   const [perfil, setPerfil] = useState(null)
   const [errorPerfil, setErrorPerfil] = useState(null)
   const [cargandoPerfil, setCargandoPerfil] = useState(false)
+  const [conectado, setConectado] = useState(true)
   const ubicacion = useLocation()
+
+  // Barra de estado, splash y boton atras de Android. Solo hace
+  // algo dentro de la app; en el navegador no estorba.
+  useEffect(() => {
+    prepararApp(() => {
+      // Sin historial que recorrer, el boton atras cierra la app.
+      import('@capacitor/app').then(({ App }) => App.exitApp()).catch(() => {})
+    })
+  }, [])
+
+  // Aviso de "sin senal". En el Amazonas esto no es un caso raro:
+  // es el estado normal media hora al dia.
+  useEffect(() => {
+    let vivo = true
+    hayRed().then((r) => vivo && setConectado(r))
+    let quitar = () => {}
+    alCambiarRed((r) => vivo && setConectado(r)).then((q) => (quitar = q))
+    return () => {
+      vivo = false
+      quitar()
+    }
+  }, [])
 
   // getSession puede quedarse esperando para siempre si el token
   // vencio y la red esta lenta: la libreria no le pone limite. Sin
@@ -73,6 +98,13 @@ export default function App() {
     cargarPerfil()
   }, [cargarPerfil])
 
+  // Notificaciones: se arrancan cuando ya se sabe quien es. Antes
+  // no tiene sentido pedirle permiso a un desconocido.
+  useEffect(() => {
+    if (!perfil?.id) return
+    return iniciarAvisos(perfil)
+  }, [perfil?.id])
+
   // Antes que nada: si no hay .env, se explica en vez de fallar en blanco.
   if (faltaConfiguracion)
     return (
@@ -89,6 +121,11 @@ export default function App() {
 
   return (
     <div className={'app' + (conNav ? ' con-nav' : '')}>
+      {!conectado && (
+        <div className="sin-senal">
+          Sin señal. Puede ver lo último que se descargó, pero no se guardan cambios.
+        </div>
+      )}
       {errorSesion ? (
         <main style={{ paddingTop: 24 }}>
           <ErrorRed mensaje={errorSesion} onReintentar={revisarSesion} />

@@ -25,9 +25,12 @@ Lo unico que se construye ahora:
 - La entrega se cierra con el codigo de retiro de 4 digitos.
 
 **Fuera de la version 0:** pagos dentro de la app, GPS en vivo, motocargas,
-cargadores del muelle, transporte de personas, facturacion, notificaciones
-automaticas, apps nativas. Todo eso esta en `docs/ESPECIFICACION.md` para
-despues. No lo construya todavia.
+cargadores del muelle, transporte de personas, facturacion. Todo eso esta en
+`docs/ESPECIFICACION.md` para despues. No lo construya todavia.
+
+**Se adelantaron a la version 0** las notificaciones de llegada y la app
+nativa, porque Apple no acepta en su tienda una app que sea solo un sitio
+web envuelto. Ver la seccion "Empaquetado nativo".
 
 ## Modelo de ingresos — la regla de oro
 
@@ -75,17 +78,47 @@ Las fechas de llegada son **estimaciones referenciales**, nunca promesas.
 ```
 src/lib/carga.js        Reglas de negocio del calculo de carga
 src/lib/supabase.js     Cliente de Supabase
+src/lib/nativo.js       Capa nativa: camara, GPS, avisos, sin senal
+src/lib/avisos.js       Notificaciones de llegada al muelle
+src/components/         Piezas de interfaz reutilizables
 src/pages/              Una pantalla por archivo
 src/styles.css          Estilos e identidad visual
 supabase/migrations/    Esquema y politicas RLS
+supabase/functions/     Funciones de servidor (push por FCM)
+android/                Proyecto nativo de Android (Capacitor)
+tienda/                 Textos e imagenes de la ficha de Play
+.github/workflows/      Compilacion del AAB en CI
 docs/ESPECIFICACION.md  El documento completo del producto
+docs/PUBLICAR-EN-TIENDAS.md  Los pasos que solo puede hacer Neo
 docs/FASE-0.md          Que hacer antes de programar mas
 .claude/agents/         Agentes del proyecto
 ```
 
+## Empaquetado nativo
+
+La misma base de codigo corre en tres sitios: navegador, app de Play y
+app de App Store. **Capacitor** envuelve la web; no hay codigo Java ni
+Swift escrito a mano.
+
+`src/lib/nativo.js` es el UNICO archivo que sabe en que plataforma esta
+corriendo. Toda funcion nativa nueva entra por ahi y **siempre degrada**:
+si el aparato no la tiene, la app no se rompe.
+
+Las cuatro funciones nativas no son adorno. Apple rechaza por la
+guideline 4.2 cualquier app que sea "un sitio web reempaquetado", y
+estas cuatro son las que la sacan de esa categoria:
+
+1. Avisos de llegada al muelle (Realtime + push por FCM)
+2. Foto de entrega con la camara
+3. Ubicacion del muelle al marcar la llegada
+4. Manifiesto que abre sin senal
+
+Los plugins se cargan con `import()` dinamico: quien solo entra a
+rastrear un envio desde el navegador no se descarga codigo de camara.
+
 ## Decisiones tecnicas
 
-- **React + Vite**, PWA instalable. Sin tiendas de aplicaciones todavia.
+- **React + Vite**, PWA instalable, empaquetada con Capacitor para Play.
 - **Supabase** (capa gratis): PostgreSQL, autenticacion y API.
 - **Entrada por enlace magico al correo.** Nada de SMS: cuesta plata.
 - **Sin pasarelas de pago.** El pago es directo entre las partes.

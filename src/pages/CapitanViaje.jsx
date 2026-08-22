@@ -5,6 +5,14 @@ import { consultar } from '../lib/red.js'
 import { fecha, pesos, ESTADOS_ENVIO, TIPOS_CAJA } from '../lib/carga.js'
 import { Cargando, ErrorRed, Vacio } from '../components/Estado.jsx'
 import Cabecera from '../components/Cabecera.jsx'
+import {
+  fotoDeEntrega,
+  ubicacionActual,
+  vibrar,
+  esNativo,
+  guardarCopia,
+  leerCopia,
+} from '../lib/nativo.js'
 
 const COLUMNAS_ENVIO =
   'id, viaje_id, parada_id, destinatario_nombre, kg_cobrables, fragil, pago, valor, estado, ' +
@@ -31,6 +39,24 @@ export default function CapitanViaje() {
   const [mensaje, setMensaje] = useState(null)
   const [fallo, setFallo] = useState(null) // { texto, reintentar }
   const [ocupado, setOcupado] = useState(false)
+  const [copiaDe, setCopiaDe] = useState(null) // fecha de la copia sin senal
+
+  // Sin senal se muestra la ultima copia, SIEMPRE marcada con su
+  // fecha. Un manifiesto viejo presentado como si fuera de ahorita
+  // es peor que no mostrar nada: el capitan zarpa creyendo que la
+  // carga que ve es toda la que le reservaron.
+  const usarCopia = useCallback(
+    async (errorDeRed) => {
+      const copia = await leerCopia('viaje:' + id)
+      if (!copia?.datos?.viaje) return setError(errorDeRed)
+      setViaje(copia.datos.viaje)
+      setParadas(copia.datos.paradas ?? [])
+      setEnvios(copia.datos.envios ?? [])
+      setCopiaDe(copia.cuando)
+      setError(null)
+    },
+    [id]
+  )
 
   const cargar = useCallback(async () => {
     setCargando(true)
@@ -45,7 +71,7 @@ export default function CapitanViaje() {
     )
     if (r1.error) {
       setCargando(false)
-      return setError(r1.error)
+      return usarCopia(r1.error)
     }
     setViaje(r1.data)
 
@@ -54,18 +80,23 @@ export default function CapitanViaje() {
     )
     if (r2.error) {
       setCargando(false)
-      return setError(r2.error)
+      return usarCopia(r2.error)
     }
     setParadas(r2.data ?? [])
 
     const r3 = await consultar(supabase.from('envios').select(COLUMNAS_ENVIO).eq('viaje_id', id))
     if (r3.error) {
       setCargando(false)
-      return setError(r3.error)
+      return usarCopia(r3.error)
     }
     setEnvios(r3.data ?? [])
     setCargando(false)
-  }, [id])
+    setCopiaDe(null)
+
+    // El manifiesto tiene que poder abrirse en mitad del rio, sin
+    // senal. Se guarda la ultima copia buena para eso.
+    guardarCopia('viaje:' + id, { viaje: r1.data, paradas: r2.data ?? [], envios: r3.data ?? [] })
+  }, [id, usarCopia])
 
   useEffect(() => {
     cargar()
@@ -209,10 +240,21 @@ export default function CapitanViaje() {
       }
     }
 
+    // El capitan marca la llegada parado en el muelle, asi que el
+    // celular sabe donde queda. Se guarda la primera vez nada mas y
+    // nunca bloquea: si el GPS no responde, la llegada se marca igual.
+    const lugar = await ubicacionActual()
+
     const r4 = await consultar(
       supabase
         .from('paradas')
-        .update({ estado: 'descargando', hora_llegada: new Date().toISOString() })
+        .update({
+          estado: 'descargando',
+          hora_llegada: new Date().toISOString(),
+          ...(lugar && !parada.lat
+            ? { lat: lugar.lat, lng: lugar.lng, precision_m: lugar.precision }
+            : {}),
+        })
         .eq('id', parada.id)
     )
     setOcupado(false)
@@ -223,6 +265,7 @@ export default function CapitanViaje() {
       })
     }
 
+    vibrar('fuerte')
     setMensaje(`Llegada a ${parada.muelle} registrada. Se avisó a los clientes.`)
     cargar()
   }
@@ -291,6 +334,13 @@ export default function CapitanViaje() {
         </div>
 
         <h2 className="titulo-grande">{viaje.embarcaciones?.nombre}</h2>
+
+        {copiaDe && (
+          <div className="copia-vieja">
+            Sin señal. Esto es la copia guardada del <strong>{fecha(copiaDe)}</strong>. Puede
+            haber carga nueva que todavía no ha bajado.
+          </div>
+        )}
 
         <div className="desglose">
           <div>
@@ -390,24 +440,70 @@ function FilaEnvio({ envio, onCambio }) {
   const [codigo, setCodigo] = useState('')
   const [error, setError] = useState(null)
   const [verificando, setVerificando] = useState(false)
+  const [foto, setFoto] = useState(null)
+  const [paso, setPaso] = useState(null)
 
   // La comparacion del codigo NO se hace aqui. Se manda al servidor,
   // que es el unico que conoce el token y el unico autorizado a
   // marcar el envio como entregado.
+  // Foto de la entrega. Es opcional a proposito: si el celular no
+  // tiene camara, si el capitan la cancela o si esta lloviendo, la
+  // entrega se cierra igual. Lo que manda es el codigo de retiro.
+  async function tomarFoto() {
+    setError(null)
+    const f = await fotoDeEntrega()
+    if (!f) return
+    setFoto(f)
+    vibrar('suave')
+  }
+
   async function entregar() {
     setVerificando(true)
     setError(null)
 
+    // La ubicacion se pide antes de cerrar la entrega, pero nunca
+    // la bloquea: si el GPS no responde, se entrega sin ella.
+    setPaso('Ubicando el muelle…')
+    const lugar = await ubicacionActual()
+
+    // La foto se sube antes de marcar entregado. Si la subida falla,
+    // se cierra la entrega igual: no se le puede negar la mercancia
+    // a alguien que ya dicto su codigo porque no hubo senal.
+    let rutaFoto = null
+    if (foto) {
+      setPaso('Subiendo la foto…')
+      try {
+        const bytes = Uint8Array.from(atob(foto.base64), (c) => c.charCodeAt(0))
+        const ruta = `${envio.id}/${Date.now()}.jpg`
+        const { error: eSubida } = await supabase.storage
+          .from('entregas')
+          .upload(ruta, bytes, { contentType: 'image/jpeg', upsert: false })
+        if (!eSubida) rutaFoto = ruta
+      } catch {
+        /* se sigue sin foto */
+      }
+    }
+
+    setPaso('Verificando el código…')
     const { data, error: err } = await consultar(
-      supabase.rpc('entregar_envio', { p_envio_id: envio.id, p_token: codigo.trim() })
+      supabase.rpc('entregar_envio', {
+        p_envio_id: envio.id,
+        p_token: codigo.trim(),
+        p_foto: rutaFoto,
+        p_lat: lugar?.lat ?? null,
+        p_lng: lugar?.lng ?? null,
+      })
     )
 
     setVerificando(false)
+    setPaso(null)
 
     if (err) return setError(err)
     if (!data?.ok) return setError(data?.motivo ?? 'No se pudo cerrar la entrega.')
 
+    vibrar('fuerte')
     setCodigo('')
+    setFoto(null)
     setAbierto(false)
     onCambio()
   }
@@ -467,9 +563,39 @@ function FilaEnvio({ envio, onCambio }) {
                 maxLength={4}
                 value={codigo}
                 onChange={(e) => setCodigo(e.target.value.replace(/\D/g, ''))}
-                placeholder="4 dígitos"
+                placeholder="0000"
                 style={{ letterSpacing: 8, fontWeight: 700, fontSize: 20, textAlign: 'center' }}
               />
+
+              {/* La foto es opcional. Sirve de respaldo del capitan si
+                  despues alguien reclama que nunca le entregaron. */}
+              {esNativo && (
+                <>
+                  {foto ? (
+                    <>
+                      <img
+                        className="foto-entrega"
+                        alt="Foto de la entrega"
+                        src={'data:image/jpeg;base64,' + foto.base64}
+                      />
+                      <button className="secundario" onClick={() => setFoto(null)}>
+                        Quitar la foto
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ height: 14 }} />
+                      <button className="secundario" onClick={tomarFoto}>
+                        📷 Tomar foto de la entrega
+                      </button>
+                      <div className="mini" style={{ marginTop: 6 }}>
+                        Opcional. Le queda como respaldo si después alguien reclama.
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+
               {error && <div className="aviso critico">{error}</div>}
               <div style={{ height: 12 }} />
               <button
@@ -477,10 +603,14 @@ function FilaEnvio({ envio, onCambio }) {
                 onClick={entregar}
                 disabled={verificando || codigo.trim().length !== 4}
               >
-                {verificando ? 'Verificando…' : 'Confirmar entrega'}
+                {verificando ? (paso ?? 'Verificando…') : 'Confirmar entrega'}
               </button>
               <div style={{ height: 8 }} />
-              <button className="secundario" onClick={() => setAbierto(false)}>
+              <button
+                className="secundario"
+                onClick={() => setAbierto(false)}
+                disabled={verificando}
+              >
                 Cancelar
               </button>
             </>

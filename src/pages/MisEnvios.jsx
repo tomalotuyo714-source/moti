@@ -5,6 +5,12 @@ import { consultar } from '../lib/red.js'
 import { Cargando, ErrorRed, Vacio } from '../components/Estado.jsx'
 import Ruta from '../components/Ruta.jsx'
 import { pesos, fecha, ESTADOS_ENVIO } from '../lib/carga.js'
+import { compartir as compartirNativo, vibrar } from '../lib/nativo.js'
+
+// Dominio publico del rastreo. Dentro de la app nativa,
+// window.location.origin apunta a un esquema interno de Capacitor
+// que no le sirve a nadie por fuera.
+const SITIO = 'https://moti-zeta.vercel.app'
 
 export default function MisEnvios({ perfil }) {
   const navegar = useNavigate()
@@ -36,8 +42,11 @@ export default function MisEnvios({ perfil }) {
     cargar()
   }, [cargar])
 
-  function compartir(envio) {
-    const enlace = `${window.location.origin}/rastreo/${envio.codigo_publico}`
+  async function compartir(envio) {
+    // Dentro de la app el enlace tiene que apuntar al sitio publico,
+    // no al esquema interno de Capacitor: quien recibe abre desde
+    // WhatsApp, sin la app instalada.
+    const enlace = `${SITIO}/rastreo/${envio.codigo_publico}`
     const texto =
       `Le envié una mercancía por Moti.\n\n` +
       `Barco: ${envio.viajes?.embarcaciones?.nombre}\n` +
@@ -47,13 +56,12 @@ export default function MisEnvios({ perfil }) {
 
     // Se comparte desde el celular del remitente, no desde el servidor.
     // Asi no exponemos la plataforma a inyeccion de numeros (regla 4.35).
-    if (navigator.share) {
-      navigator.share({ text: texto }).catch(() => {})
-    } else {
-      navigator.clipboard.writeText(texto)
+    const como = await compartirNativo({ titulo: 'Envío por Moti', texto })
+    if (como === 'copiado') {
       setCopiado(envio.id)
       setTimeout(() => setCopiado(null), 2500)
     }
+    if (como !== 'nada') vibrar('suave')
   }
 
   const cabecera = (

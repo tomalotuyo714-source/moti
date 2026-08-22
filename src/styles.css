@@ -1024,3 +1024,42 @@ a {
   color: inherit;
   display: block;
 }
+
+/* -------------------------------------------------------------
+   SIN SENAL
+   En el Amazonas no es un caso raro: es media hora al dia. Ambar,
+   no rojo: no se rompio nada, solo hay que esperar.
+   ------------------------------------------------------------- */
+.sin-senal {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--ambar);
+  color: #241700;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-align: center;
+  padding: 8px 14px calc(8px + env(safe-area-inset-top));
+  padding-top: calc(8px + env(safe-area-inset-top));
+}
+
+/* Copia vieja mostrada sin senal: se marca siempre con la fecha
+   para que nadie confunda cache con realidad. */
+.copia-vieja {
+  background: var(--ambar-fondo);
+  border-left: 3px solid var(--ambar);
+  color: var(--ambar);
+  padding: 12px 14px;
+  border-radius: var(--radio-chico);
+  font-size: 13.5px;
+  margin-bottom: 14px;
+}
+
+/* Miniatura de la foto de entrega */
+.foto-entrega {
+  width: 100%;
+  border-radius: var(--radio-chico);
+  display: block;
+  margin: 12px 0;
+  background: var(--superficie-2);
+}
